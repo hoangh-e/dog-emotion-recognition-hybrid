@@ -1,0 +1,27 @@
+Đề tài phân lọại cảm xúc chó
+I. Tiền xử lý dữ liệu 
+như sau:
+1. Dùng model YOLO dog head + Reset emotion head dog (sad, happy, angry, relaxed)
+2. Dùng Model YOLO detect tail status (up, mid, down)
+3. TÔi được tập dữ liệu là: [x1,x2,x3,x4][y1,y2,y3] x là confident mà resnet nhận diện được cảm xúc chó, y là confident trạng thái đuôi chó 
++ thêm 1 cam xúc label thủ công (sad, happy, angry, relaxed)
+Note: 
+- Với việc sử dụng Resnet thì 1 vector x(n) sẽ có thể tồn tại nhiều confident cho các class
+- Với việc sử dụng Yolo object detection cho trạng thái đuôi thì y(n) chỉ có thể tồn tại 1 confident cho 1 trạng thái duy nhất
+
+II. Tăng nhận diện cảm xúc bằng ML
+Nhằm mục đích tăng độ chính xác của cảm xúc tôi thực hiện 1 ML pipeline như sau:
+1. X = [x1,x2,x3,x4][y1,y2,y3] , Y = Cảm xúc được label.
+2. Thực hiện dùng tập dataset X->Y train cho các model multi classification.
+3. Đánh giá ra 1 model toàn diện có tỉ lệ vượt trội trên tập test.
+
+III. Đề xuất thuật toán để nhận diện
+(Với bước II.3) Nếu xảy ra các thuật toán ML đưa ra các đánh giá chỉ vượt trội về 1 lớp khác nhâu trên từng thuật toán khác nhau thì sẽ qua phần III)
+(Lọc các model ML không nổi trội, để giới hạn số lượng thuật toán ML)
+
+A.Train
+1. Lấy ra 1 tập train khác có label tương tự như phần III ( X = [x1,x2,x3,x4][y1,y2,y3] , Y = Cảm xúc được label)
+2. Dùng các model ML được train phần II predict để đưa ra 1 kết quả có confident cao nhất cho 1 class cảm xúc.
+3. Thực hiện chọn ra 1 thuật toán predict đúng với label và có confident cao nhất (gọi ml_name là tên thuật toán được gán tương ứng).
+4. Thực hiện với toàn bộ ảnh trên tập train mới ta sẽ được 1 tập dataset: X = [x1,x2,x3,x4][y1,y2,y3] Y = ml_name
+5. Thực hiện train tập dữ liệu trên cho thuật toán multi-classification (được chọn ở đây là Decision Trê). Sau khi train ta sẽ nhận được 1 model ML chọn thuật toán để predict dựa trên Reset emotion head dog (sad, happy, angry, relaxed) và YOLO detect tail status (up, mid, down)
