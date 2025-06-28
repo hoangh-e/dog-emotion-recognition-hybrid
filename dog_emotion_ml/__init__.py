@@ -31,10 +31,16 @@ from .ensemble_config import (
     get_feature_indices,
     print_ensemble_summary
 )
+from .data_pipeline import (
+    RoboflowDataProcessor,
+    DataNormalizer,
+    create_sample_roboflow_structure,
+    demo_data_pipeline
+)
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 __author__ = "Dog Emotion Recognition Team"
-__description__ = "Comprehensive ML package with 7 ensemble learning techniques for dog emotion recognition"
+__description__ = "Comprehensive ML package with 7 ensemble learning techniques for dog emotion recognition and data pipeline for Roboflow integration"
 
 __all__ = [
     # Main classes
@@ -46,6 +52,10 @@ __all__ = [
     "HeterogeneousEnsemble", 
     "MultiLevelDeepEnsemble",
     
+    # Data pipeline classes
+    "RoboflowDataProcessor",
+    "DataNormalizer",
+    
     # Configuration
     "ENSEMBLE_CONFIGS",
     "BASE_ESTIMATOR_CONFIGS",
@@ -56,5 +66,7 @@ __all__ = [
     "get_ensemble_config",
     "get_base_estimator_config",
     "get_feature_indices",
-    "print_ensemble_summary"
+    "print_ensemble_summary",
+    "create_sample_roboflow_structure",
+    "demo_data_pipeline"
 ] 

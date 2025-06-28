@@ -886,9 +886,14 @@ class EmotionMLClassifier:
         else:
             raise ValueError("dataset_name must be 'train', 'test', or 'test_for_train'")
     
-    def prepare_training_data(self):
+    def prepare_training_data(self, use_advanced_normalization=True):
         """
         Prepare training data by extracting features and labels.
+        
+        Parameters:
+        -----------
+        use_advanced_normalization : bool, default=True
+            Sử dụng chuẩn hóa nâng cao (Z-score cho emotion, pass-through cho tail)
         """
         if self.train_data is None:
             raise ValueError("No training data loaded. Use load_train_dataset() first.")
@@ -900,15 +905,46 @@ class EmotionMLClassifier:
         # Encode labels
         self.y_train = self.label_encoder.fit_transform(self.y_train)
         
-        # Scale features
-        self.X_train = self.scaler.fit_transform(self.X_train)
+        # Advanced normalization theo yêu cầu
+        if use_advanced_normalization:
+            # Tách emotion features (4 cột đầu) và tail features (3 cột cuối)
+            emotion_features = self.X_train[:, :4]  # sad, angry, happy, relaxed
+            tail_features = self.X_train[:, 4:]     # down, up, mid
+            
+            # Z-score normalization cho emotion features
+            from sklearn.preprocessing import StandardScaler
+            emotion_scaler = StandardScaler()
+            emotion_features_normalized = emotion_scaler.fit_transform(emotion_features)
+            
+            # Tail features pass through (đã là binary/probabilities)
+            tail_features_normalized = tail_features
+            
+            # Kết hợp lại
+            self.X_train = np.column_stack([emotion_features_normalized, tail_features_normalized])
+            
+            # Lưu scalers để sử dụng cho test data
+            self.emotion_scaler = emotion_scaler
+            self.tail_scaler = None  # Không cần scaler cho tail features
+            
+            print("Sử dụng chuẩn hóa nâng cao:")
+            print(f"  - Emotion features (Z-score): mean={emotion_scaler.mean_}, std={emotion_scaler.scale_}")
+            print(f"  - Tail features: pass-through (không chuẩn hóa)")
+        else:
+            # Chuẩn hóa truyền thống (tất cả features với StandardScaler)
+            self.X_train = self.scaler.fit_transform(self.X_train)
+            print("Sử dụng chuẩn hóa truyền thống (StandardScaler cho tất cả features)")
         
         print(f"Training data prepared: {self.X_train.shape[0]} samples, {self.X_train.shape[1]} features")
         print(f"Classes: {self.label_encoder.classes_}")
     
-    def prepare_test_data(self):
+    def prepare_test_data(self, use_advanced_normalization=True):
         """
         Prepare test data by extracting features and labels.
+        
+        Parameters:
+        -----------
+        use_advanced_normalization : bool, default=True
+            Sử dụng chuẩn hóa nâng cao (phải match với training data)
         """
         if self.test_data is None:
             raise ValueError("No test data loaded. Use load_test_dataset() first.")
@@ -916,15 +952,40 @@ class EmotionMLClassifier:
         self.X_test = self.test_data.iloc[:, 1:8].values
         self.y_test = self.test_data.iloc[:, -1].values
         
-        # Encode labels and scale features
+        # Encode labels
         self.y_test = self.label_encoder.transform(self.y_test)
-        self.X_test = self.scaler.transform(self.X_test)
+        
+        # Apply same normalization as training data
+        if use_advanced_normalization and hasattr(self, 'emotion_scaler'):
+            # Tách emotion features và tail features
+            emotion_features = self.X_test[:, :4]  # sad, angry, happy, relaxed
+            tail_features = self.X_test[:, 4:]     # down, up, mid
+            
+            # Transform emotion features với fitted scaler
+            emotion_features_normalized = self.emotion_scaler.transform(emotion_features)
+            
+            # Tail features pass through
+            tail_features_normalized = tail_features
+            
+            # Kết hợp lại
+            self.X_test = np.column_stack([emotion_features_normalized, tail_features_normalized])
+            
+            print("Test data: Sử dụng chuẩn hóa nâng cao (emotion Z-score, tail pass-through)")
+        else:
+            # Chuẩn hóa truyền thống
+            self.X_test = self.scaler.transform(self.X_test)
+            print("Test data: Sử dụng chuẩn hóa truyền thống")
         
         print(f"Test data prepared: {self.X_test.shape[0]} samples, {self.X_test.shape[1]} features")
     
-    def prepare_test_for_train_data(self):
+    def prepare_test_for_train_data(self, use_advanced_normalization=True):
         """
         Prepare test-for-train data by extracting features and labels.
+        
+        Parameters:
+        -----------
+        use_advanced_normalization : bool, default=True
+            Sử dụng chuẩn hóa nâng cao (phải match với training data)
         """
         if self.test_for_train_data is None:
             raise ValueError("No test-for-train data loaded. Use load_test_for_train_dataset() first.")
@@ -932,11 +993,116 @@ class EmotionMLClassifier:
         self.X_test_for_train = self.test_for_train_data.iloc[:, 1:8].values
         self.y_test_for_train = self.test_for_train_data.iloc[:, -1].values
         
-        # Encode labels and scale features
+        # Encode labels
         self.y_test_for_train = self.label_encoder.transform(self.y_test_for_train)
-        self.X_test_for_train = self.scaler.transform(self.X_test_for_train)
+        
+        # Apply same normalization as training data
+        if use_advanced_normalization and hasattr(self, 'emotion_scaler'):
+            # Tách emotion features và tail features
+            emotion_features = self.X_test_for_train[:, :4]  # sad, angry, happy, relaxed
+            tail_features = self.X_test_for_train[:, 4:]     # down, up, mid
+            
+            # Transform emotion features với fitted scaler
+            emotion_features_normalized = self.emotion_scaler.transform(emotion_features)
+            
+            # Tail features pass through
+            tail_features_normalized = tail_features
+            
+            # Kết hợp lại
+            self.X_test_for_train = np.column_stack([emotion_features_normalized, tail_features_normalized])
+            
+            print("Test-for-train data: Sử dụng chuẩn hóa nâng cao (emotion Z-score, tail pass-through)")
+        else:
+            # Chuẩn hóa truyền thống
+            self.X_test_for_train = self.scaler.transform(self.X_test_for_train)
+            print("Test-for-train data: Sử dụng chuẩn hóa truyền thống")
         
         print(f"Test-for-train data prepared: {self.X_test_for_train.shape[0]} samples")
+    
+    def create_dataset_from_roboflow(self, roboflow_path, yolo_model_path=None, 
+                                   resnet_model_path=None, output_path=None, split='train'):
+        """
+        Tạo dataset từ Roboflow data sử dụng YOLO và ResNet models
+        
+        Parameters:
+        -----------
+        roboflow_path : str
+            Đường dẫn đến thư mục Roboflow dataset
+        yolo_model_path : str, optional
+            Đường dẫn đến YOLO model cho tail detection
+        resnet_model_path : str, optional
+            Đường dẫn đến ResNet model cho emotion detection
+        output_path : str, optional
+            Đường dẫn lưu dataset CSV (nếu None sẽ auto-generate)
+        split : str, default='train'
+            Split để xử lý ('train', 'val', 'test')
+            
+        Returns:
+        --------
+        pd.DataFrame
+            Dataset đã tạo
+        """
+        try:
+            from .data_pipeline import RoboflowDataProcessor
+        except ImportError:
+            raise ImportError("RoboflowDataProcessor not available. Please check data_pipeline module.")
+        
+        # Initialize processor
+        processor = RoboflowDataProcessor(
+            dataset_path=roboflow_path,
+            yolo_tail_model_path=yolo_model_path,
+            resnet_emotion_model_path=resnet_model_path
+        )
+        
+        # Auto-generate output path if not provided
+        if output_path is None:
+            output_path = f"{split}_dataset_from_roboflow.csv"
+        
+        # Create dataset
+        dataset = processor.create_training_dataset(output_path, split=split)
+        
+        print(f"Dataset created successfully: {output_path}")
+        print(f"Dataset shape: {dataset.shape}")
+        print(f"Columns: {list(dataset.columns)}")
+        
+        return dataset
+    
+    def normalize_features_advanced(self, emotion_features, tail_features, fit=True):
+        """
+        Chuẩn hóa features theo phương pháp nâng cao
+        
+        Parameters:
+        -----------
+        emotion_features : array-like, shape (n_samples, 4)
+            Emotion features [sad, angry, happy, relaxed]
+        tail_features : array-like, shape (n_samples, 3)
+            Tail features [down, up, mid]
+        fit : bool, default=True
+            Có fit scaler hay không (False cho test data)
+            
+        Returns:
+        --------
+        np.ndarray
+            Combined normalized features
+        """
+        try:
+            from .data_pipeline import DataNormalizer
+        except ImportError:
+            raise ImportError("DataNormalizer not available. Please check data_pipeline module.")
+        
+        if not hasattr(self, 'data_normalizer'):
+            self.data_normalizer = DataNormalizer()
+        
+        if fit:
+            emotion_norm, tail_norm = self.data_normalizer.fit_transform(emotion_features, tail_features)
+        else:
+            emotion_norm, tail_norm = self.data_normalizer.transform(emotion_features, tail_features)
+        
+        # Combine features
+        if tail_norm is not None:
+            return np.column_stack([emotion_norm, tail_norm])
+        else:
+            return emotion_norm
     
     def train_logistic_regression(self, multi_class='multinomial', solver='lbfgs', max_iter=1000):
         """Huấn luyện mô hình Logistic Regression."""

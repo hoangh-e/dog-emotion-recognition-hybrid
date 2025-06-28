@@ -4,7 +4,9 @@ Gói machine learning chuyên nghiệp cho việc nhận diện cảm xúc chó 
 
 ## Tổng Quan
 
-### Pipeline Machine Learning Hai Giai Đoạn
+### Pipeline Machine Learning Ba Giai Đoạn
+
+**Giai đoạn I**: Xử lý dữ liệu từ Roboflow với tích hợp YOLO tail detection và ResNet emotion detection, kết hợp chuẩn hóa nâng cao (Z-score cho emotion features, pass-through cho tail features).
 
 **Giai đoạn II**: Huấn luyện nhiều thuật toán ML với đầy đủ 7 kỹ thuật ensemble trên đặc trưng kết hợp từ ResNet emotion detection (buồn, tức giận, vui vẻ, thư giãn) và YOLO tail status detection (xuống, lên, giữa).
 
@@ -24,6 +26,8 @@ Gói machine learning chuyên nghiệp cho việc nhận diện cảm xúc chó 
 
 - ✅ **Triển khai đầy đủ 7 kỹ thuật ensemble** theo tài liệu nghiên cứu
 - ✅ **Pipeline chuyên nghiệp** với data validation và preprocessing
+- ✅ **Tích hợp Roboflow** với YOLO + ResNet models
+- ✅ **Chuẩn hóa nâng cao** (Z-score cho emotion, pass-through cho tail)
 - ✅ **Tự động phát hiện và xử lý** các vấn đề dữ liệu
 - ✅ **Hỗ trợ đa định dạng** (CSV, TXT, XLSX) với auto-detection
 - ✅ **Cấu hình linh hoạt** cho từng kỹ thuật ensemble
@@ -42,6 +46,9 @@ pip install xgboost>=1.5.0 lightgbm>=3.3.0
 
 # Data processing and visualization
 pip install openpyxl>=3.0.0 matplotlib>=3.5.0 seaborn>=0.11.0
+
+# Computer vision dependencies (optional)
+pip install opencv-python>=4.5.0 Pillow>=8.0.0 PyYAML>=6.0
 ```
 
 Hoặc cài đặt tất cả từ requirements.txt:
@@ -61,11 +68,16 @@ pip install -e .
 ## Sử Dụng Nhanh
 
 ```python
-from dog_emotion_ml import EmotionMLClassifier, EnsembleMetaLearner
+from dog_emotion_ml import EmotionMLClassifier, EnsembleMetaLearner, RoboflowDataProcessor
 
-# Giai đoạn II: Huấn luyện nhiều mô hình ML
+# Giai đoạn I: Xử lý dữ liệu từ Roboflow (tùy chọn)
+processor = RoboflowDataProcessor('path/to/roboflow/dataset')
+dataset = processor.create_training_dataset('processed_data.csv', split='train')
+
+# Giai đoạn II: Huấn luyện nhiều mô hình ML với chuẩn hóa nâng cao
 classifier = EmotionMLClassifier()
 classifier.load_train_dataset('train_data.csv')
+classifier.prepare_training_data(use_advanced_normalization=True)  # Z-score cho emotion
 classifier.train_all_models()
 
 # Tạo dữ liệu meta-training
