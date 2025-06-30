@@ -1,0 +1,1 @@
+cursor-notebook-mcp --transport streamable-http --allow-root "K:\Workspace\nckh\dog-emotion-recognition-hybrid" --host 127.0.0.1 --port 8080

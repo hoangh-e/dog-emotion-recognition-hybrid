@@ -11,6 +11,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from sklearn.metrics import confusion_matrix, classification_report
 import warnings
+import json
+import re
+import logging
+from typing import Dict, Any, Optional, Union
 warnings.filterwarnings('ignore')
 
 
@@ -453,4 +457,550 @@ def create_data_report(data, output_path=None, title="Data Report"):
     else:
         print(report_text)
     
-    return report 
+    return report
+
+
+def safe_json_parse(json_string: str, fix_common_errors: bool = True) -> Optional[Dict[str, Any]]:
+    """
+    Safely parse JSON string with automatic error fixing for common issues
+    
+    Parameters:
+    -----------
+    json_string : str
+        JSON string to parse
+    fix_common_errors : bool
+        Whether to attempt fixing common JSON syntax errors
+        
+    Returns:
+    --------
+    dict or None
+        Parsed JSON dict if successful, None if failed
+    """
+    if not json_string or not isinstance(json_string, str):
+        return None
+    
+    # First try direct parsing
+    try:
+        return json.loads(json_string)
+    except json.JSONDecodeError as e:
+        if not fix_common_errors:
+            logging.error(f"JSON parsing failed: {e}")
+            return None
+        
+        print(f"⚠️  JSON parsing error: {e}")
+        print("🔧 Attempting to fix common JSON syntax issues...")
+        
+        # Fix common JSON syntax errors
+        fixed_json = _fix_json_syntax_errors(json_string, e)
+        
+        if fixed_json != json_string:
+            try:
+                result = json.loads(fixed_json)
+                print("✅ Successfully fixed and parsed JSON")
+                return result
+            except json.JSONDecodeError as e2:
+                logging.error(f"JSON parsing still failed after fixes: {e2}")
+                return None
+        else:
+            logging.error(f"Could not fix JSON syntax error: {e}")
+            return None
+
+
+def _fix_json_syntax_errors(json_string: str, original_error: json.JSONDecodeError) -> str:
+    """
+    Attempt to fix common JSON syntax errors
+    
+    Parameters:
+    -----------
+    json_string : str
+        Original JSON string
+    original_error : json.JSONDecodeError
+        Original parsing error
+        
+    Returns:
+    --------
+    str
+        Fixed JSON string (may be unchanged if no fixes applied)
+    """
+    fixed = json_string
+    error_msg = str(original_error).lower()
+    
+    # Fix trailing commas - this is the most common issue
+    print("🔧 Fixing trailing commas...")
+    # Remove trailing commas before closing brackets/braces
+    fixed = re.sub(r',(\s*[\]\}])', r'\1', fixed)
+    
+    # Fix: Expected ',' or ']' after array element
+    if "expected" in error_msg and ("after array element" in error_msg or "after object member" in error_msg):
+        print("🔧 Fixing trailing comma syntax...")
+        # More aggressive trailing comma removal
+        fixed = re.sub(r',(\s*[\]\}])', r'\1', fixed)
+    
+    # Fix: Multiple consecutive commas
+    if "," in fixed:
+        print("🔧 Fixing multiple consecutive commas...")
+        fixed = re.sub(r',+', ',', fixed)
+        # Remove commas that are followed immediately by closing brackets
+        fixed = re.sub(r',(\s*[\]\}])', r'\1', fixed)
+    
+    # Fix: Comma before opening brace/bracket
+    fixed = re.sub(r',(\s*[\[\{])', r'\1', fixed)
+    
+    # Handle "Expecting value" errors which often indicate trailing commas
+    if "expecting value" in error_msg:
+        print("🔧 Fixing 'expecting value' error (likely trailing comma)...")
+        # Remove trailing commas more aggressively
+        fixed = re.sub(r',(\s*[\]\}])', r'\1', fixed)
+        # Remove trailing comma at end of string
+        fixed = re.sub(r',\s*$', '', fixed)
+    
+    # Handle "Expecting property name" errors in objects
+    if "expecting property name" in error_msg:
+        print("🔧 Fixing 'expecting property name' error...")
+        fixed = re.sub(r',(\s*\})', r'\1', fixed)
+    
+    # Fix: Unexpected character after closing quote
+    if "unexpected" in error_msg and "character" in error_msg:
+        print("🔧 Fixing unexpected characters...")
+        # Try to remove common problematic characters
+        fixed = re.sub(r'(["\'])\s*[,;]\s*([}\]])', r'\1\2', fixed)
+    
+    # Fix: Missing quotes around keys
+    if "expecting" in error_msg and "property name" in error_msg:
+        print("🔧 Adding quotes around object keys...")
+        # Add quotes around unquoted keys
+        fixed = re.sub(r'(\{|\,)\s*([a-zA-Z_][a-zA-Z0-9_]*)\s*:', r'\1"\2":', fixed)
+    
+    # Fix: Single quotes instead of double quotes
+    if "invalid" in error_msg:
+        print("🔧 Converting single quotes to double quotes...")
+        # Convert single quotes to double quotes (be careful with nested quotes)
+        fixed = re.sub(r"'([^']*)'", r'"\1"', fixed)
+    
+    # Fix: Control characters
+    print("🔧 Removing control characters...")
+    fixed = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', fixed)
+    
+    return fixed
+
+
+def validate_head_bbox_format(bbox_data: Union[str, list]) -> Optional[list]:
+    """
+    Validate and normalize head bounding box format
+    
+    Parameters:
+    -----------
+    bbox_data : str or list
+        Bounding box data (JSON string or list)
+        
+    Returns:
+    --------
+    list or None
+        Normalized bbox [x1, y1, x2, y2] or None if invalid
+    """
+    if bbox_data is None:
+        return None
+    
+    # If it's a string, try to parse as JSON
+    if isinstance(bbox_data, str):
+        if not bbox_data.strip() or bbox_data.strip() == '[]':
+            return None
+        
+        parsed_bbox = safe_json_parse(bbox_data)
+        if parsed_bbox is None:
+            return None
+        bbox_data = parsed_bbox
+    
+    # Validate list format
+    if not isinstance(bbox_data, list):
+        return None
+    
+    if len(bbox_data) != 4:
+        return None
+    
+    try:
+        # Convert to float and validate
+        bbox = [float(x) for x in bbox_data]
+        
+        # Basic sanity checks
+        x1, y1, x2, y2 = bbox
+        if x2 <= x1 or y2 <= y1:
+            return None
+        
+        if any(x < 0 for x in bbox):
+            return None
+        
+        return bbox
+    except (ValueError, TypeError):
+        return None
+
+
+def fix_json_file(file_path: str, backup: bool = True) -> bool:
+    """
+    Fix JSON syntax errors in a file
+    
+    Parameters:
+    -----------
+    file_path : str
+        Path to JSON file to fix
+    backup : bool
+        Whether to create backup before fixing
+        
+    Returns:
+    --------
+    bool
+        True if file was successfully fixed, False otherwise
+    """
+    try:
+        # Read original file
+        with open(file_path, 'r', encoding='utf-8') as f:
+            content = f.read()
+        
+        # Create backup if requested
+        if backup:
+            backup_path = f"{file_path}.backup"
+            with open(backup_path, 'w', encoding='utf-8') as f:
+                f.write(content)
+            print(f"📁 Created backup: {backup_path}")
+        
+        # Try to parse and fix
+        parsed = safe_json_parse(content, fix_common_errors=True)
+        
+        if parsed is None:
+            return False
+        
+        # Write fixed content back
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(parsed, f, indent=2, ensure_ascii=False)
+        
+        print(f"✅ Successfully fixed JSON file: {file_path}")
+        return True
+        
+    except Exception as e:
+        logging.error(f"Error fixing JSON file {file_path}: {e}")
+        return False
+
+
+def validate_dataset_json_fields(df) -> Dict[str, Any]:
+    """
+    Validate JSON fields in dataset and report issues
+    
+    Parameters:
+    -----------
+    df : pandas.DataFrame
+        Dataset with potential JSON fields
+        
+    Returns:
+    --------
+    dict
+        Validation report
+    """
+    report = {
+        'total_rows': len(df),
+        'json_fields': [],
+        'issues_found': {},
+        'fixed_count': 0
+    }
+    
+    # Check for JSON-like fields
+    json_like_columns = []
+    for col in df.columns:
+        if df[col].dtype == 'object':
+            sample_values = df[col].dropna().head(5)
+            for val in sample_values:
+                if isinstance(val, str) and (val.strip().startswith('[') or val.strip().startswith('{')):
+                    json_like_columns.append(col)
+                    break
+    
+    report['json_fields'] = json_like_columns
+    
+    # Validate each JSON field
+    for col in json_like_columns:
+        issues = []
+        fixed = 0
+        
+        for idx, value in df[col].items():
+            if pd.isna(value) or not isinstance(value, str):
+                continue
+            
+            parsed = safe_json_parse(value, fix_common_errors=False)
+            if parsed is None:
+                # Try to fix
+                fixed_parsed = safe_json_parse(value, fix_common_errors=True)
+                if fixed_parsed is not None:
+                    fixed += 1
+                else:
+                    issues.append(f"Row {idx}: Could not parse '{value[:50]}...'")
+        
+        report['issues_found'][col] = issues
+        report['fixed_count'] += fixed
+    
+    return report
+
+
+# ==========================================
+# BBOX VALIDATION FUNCTIONS
+# ==========================================
+
+def calculate_iou(box1, box2):
+    """
+    🎯 Tính Intersection over Union (IoU) giữa 2 bounding boxes
+    
+    Parameters:
+    -----------
+    box1, box2 : list or array-like
+        Bounding box [x1, y1, x2, y2] format (corner coordinates)
+    
+    Returns:
+    --------
+    float
+        IoU score (0.0 to 1.0)
+    """
+    # Ensure boxes are in [x1, y1, x2, y2] format
+    x1_1, y1_1, x2_1, y2_1 = box1
+    x1_2, y1_2, x2_2, y2_2 = box2
+    
+    # Calculate intersection area
+    x1_i = max(x1_1, x1_2)
+    y1_i = max(y1_1, y1_2)
+    x2_i = min(x2_1, x2_2)
+    y2_i = min(y2_1, y2_2)
+    
+    if x2_i <= x1_i or y2_i <= y1_i:
+        return 0.0
+    
+    intersection = (x2_i - x1_i) * (y2_i - y1_i)
+    
+    # Calculate union area
+    area1 = (x2_1 - x1_1) * (y2_1 - y1_1)
+    area2 = (x2_2 - x1_2) * (y2_2 - y1_2)
+    union = area1 + area2 - intersection
+    
+    return intersection / union if union > 0 else 0.0
+
+
+def get_ground_truth_bbox(image_path):
+    """
+    🏷️ Đọc ground truth bounding box từ annotation file (.txt)
+    
+    Parameters:
+    -----------
+    image_path : str or Path
+        Đường dẫn đến file ảnh
+    
+    Returns:
+    --------
+    list or None
+        Ground truth bbox [x1, y1, x2, y2] trong pixel coordinates, 
+        hoặc None nếu không tìm thấy
+    """
+    from pathlib import Path
+    from PIL import Image
+    
+    image_path = Path(image_path)
+    
+    # Tìm annotation file tương ứng (.txt)
+    dataset_dir = image_path.parent.parent  # từ /test/images lên /test hoặc từ /test lên /
+    possible_annotation_dirs = [
+        dataset_dir / 'labels',
+        image_path.parent.parent / 'labels', 
+        image_path.parent / 'labels',
+        dataset_dir / 'test' / 'labels',
+        dataset_dir
+    ]
+    
+    annotation_file = None
+    for ann_dir in possible_annotation_dirs:
+        potential_file = ann_dir / f"{image_path.stem}.txt"
+        if potential_file.exists():
+            annotation_file = potential_file
+            break
+    
+    if not annotation_file or not annotation_file.exists():
+        return None
+    
+    try:
+        # Đọc image dimensions để convert từ normalized coords
+        img = Image.open(image_path)
+        img_width, img_height = img.size
+        
+        with open(annotation_file, 'r') as f:
+            lines = f.readlines()
+            for line in lines:
+                line = line.strip()
+                if line:
+                    # YOLO format: class_id x_center y_center width height (normalized 0-1)
+                    parts = line.split()
+                    if len(parts) >= 5:
+                        class_id = int(parts[0])
+                        x_center = float(parts[1])
+                        y_center = float(parts[2])
+                        width = float(parts[3])
+                        height = float(parts[4])
+                        
+                        # Convert từ normalized coordinates sang pixel coordinates
+                        x_center_px = x_center * img_width
+                        y_center_px = y_center * img_height
+                        width_px = width * img_width
+                        height_px = height * img_height
+                        
+                        # Convert từ center format sang corner format [x1, y1, x2, y2]
+                        x1 = x_center_px - width_px / 2
+                        y1 = y_center_px - height_px / 2
+                        x2 = x_center_px + width_px / 2
+                        y2 = y_center_px + height_px / 2
+                        
+                        # Giả định rằng annotation đầu tiên là head bounding box
+                        return [x1, y1, x2, y2]
+                        
+    except Exception as e:
+        logging.warning(f"Error reading ground truth bbox from {annotation_file}: {e}")
+        return None
+    
+    return None
+
+
+def validate_head_detection_with_ground_truth(predicted_bbox, image_path, iou_threshold=0.3):
+    """
+    ✅ Validate predicted head bounding box với ground truth
+    
+    Parameters:
+    -----------
+    predicted_bbox : list
+        Predicted bounding box [x1, y1, x2, y2]
+    image_path : str or Path
+        Đường dẫn đến file ảnh
+    iou_threshold : float
+        Ngưỡng IoU tối thiểu để chấp nhận (default: 0.3)
+    
+    Returns:
+    --------
+    dict
+        {'valid': bool, 'iou': float, 'ground_truth_bbox': list or None, 'reason': str}
+    """
+    # Lấy ground truth bbox
+    gt_bbox = get_ground_truth_bbox(image_path)
+    
+    if gt_bbox is None:
+        # Không có ground truth, không thể validate
+        return {
+            'valid': False, 
+            'iou': 0.0, 
+            'ground_truth_bbox': None,
+            'reason': 'No ground truth available'
+        }
+    
+    # Tính IoU
+    iou = calculate_iou(predicted_bbox, gt_bbox)
+    
+    # Kiểm tra ngưỡng
+    is_valid = iou >= iou_threshold
+    
+    return {
+        'valid': is_valid,
+        'iou': iou,
+        'ground_truth_bbox': gt_bbox,
+        'reason': f'IoU {iou:.3f} {"≥" if is_valid else "<"} threshold {iou_threshold}'
+    }
+
+
+def validate_bbox_format(bbox, expected_format='xyxy'):
+    """
+    🔍 Validate bounding box format and convert if needed
+    
+    Parameters:
+    -----------
+    bbox : list or str
+        Bounding box to validate
+    expected_format : str
+        Expected format ('xyxy' for [x1,y1,x2,y2] or 'xywh' for [x,y,w,h])
+    
+    Returns:
+    --------
+    dict
+        {'valid': bool, 'bbox': list or None, 'format': str, 'reason': str}
+    """
+    if isinstance(bbox, str):
+        try:
+            bbox = eval(bbox)  # Convert string representation to list
+        except:
+            return {
+                'valid': False,
+                'bbox': None,
+                'format': 'unknown',
+                'reason': 'Could not parse bbox string'
+            }
+    
+    if not isinstance(bbox, (list, tuple, np.ndarray)):
+        return {
+            'valid': False,
+            'bbox': None,
+            'format': 'unknown',
+            'reason': 'Bbox must be list, tuple, or array'
+        }
+    
+    bbox = list(bbox)
+    
+    if len(bbox) != 4:
+        return {
+            'valid': False,
+            'bbox': None,
+            'format': 'unknown',
+            'reason': f'Bbox must have 4 values, got {len(bbox)}'
+        }
+    
+    # Check if all values are numeric
+    try:
+        bbox = [float(x) for x in bbox]
+    except (ValueError, TypeError):
+        return {
+            'valid': False,
+            'bbox': None,
+            'format': 'unknown',
+            'reason': 'Bbox values must be numeric'
+        }
+    
+    # Detect format based on values
+    x1, y1, x2, y2 = bbox
+    
+    if expected_format == 'xyxy':
+        # Check if x2 > x1 and y2 > y1 (valid corner format)
+        if x2 <= x1 or y2 <= y1:
+            return {
+                'valid': False,
+                'bbox': bbox,
+                'format': 'xyxy',
+                'reason': 'Invalid xyxy format: x2 <= x1 or y2 <= y1'
+            }
+        
+        return {
+            'valid': True,
+            'bbox': bbox,
+            'format': 'xyxy',
+            'reason': 'Valid xyxy format'
+        }
+    
+    elif expected_format == 'xywh':
+        # Check if width and height are positive
+        if x2 <= 0 or y2 <= 0:  # x2=width, y2=height in xywh format
+            return {
+                'valid': False,
+                'bbox': bbox,
+                'format': 'xywh',
+                'reason': 'Invalid xywh format: width <= 0 or height <= 0'
+            }
+        
+        return {
+            'valid': True,
+            'bbox': bbox,
+            'format': 'xywh',
+            'reason': 'Valid xywh format'
+        }
+    
+    else:
+        return {
+            'valid': False,
+            'bbox': None,
+            'format': 'unknown',
+            'reason': f'Unsupported expected format: {expected_format}'
+        }

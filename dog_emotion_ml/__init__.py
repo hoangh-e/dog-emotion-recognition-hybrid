@@ -37,6 +37,13 @@ from .data_pipeline import (
     create_sample_roboflow_structure,
     demo_data_pipeline
 )
+from .utils import (
+    # Bbox validation functions
+    calculate_iou,
+    get_ground_truth_bbox,
+    validate_head_detection_with_ground_truth,
+    validate_bbox_format
+)
 
 __version__ = "2.1.0"
 __author__ = "Dog Emotion Recognition Team"
@@ -68,5 +75,11 @@ __all__ = [
     "get_feature_indices",
     "print_ensemble_summary",
     "create_sample_roboflow_structure",
-    "demo_data_pipeline"
+    "demo_data_pipeline",
+    
+    # Bbox validation functions
+    "calculate_iou",
+    "get_ground_truth_bbox",
+    "validate_head_detection_with_ground_truth",
+    "validate_bbox_format"
 ] 
