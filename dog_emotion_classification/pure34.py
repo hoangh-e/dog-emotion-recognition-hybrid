@@ -180,9 +180,9 @@ class PURe34(nn.Module):
         return x
 
 
-def load_pure34_model(model_path, num_classes=4, device='cuda'):
+def load_resnet_model(model_path, num_classes=4, device='cuda'):
     """
-    Load a trained PURe34 model from a checkpoint file.
+    Load a ResNet34 model for emotion classification as fallback.
     
     Args:
         model_path (str): Path to the model checkpoint (.pth file)
@@ -190,11 +190,14 @@ def load_pure34_model(model_path, num_classes=4, device='cuda'):
         device (str): Device to load the model on ('cuda' or 'cpu')
         
     Returns:
-        tuple: (model, transform) where model is the loaded PURe34 model 
+        tuple: (model, transform) where model is the loaded ResNet model 
                and transform is the image preprocessing pipeline
     """
-    # Create model
-    model = PURe34(num_classes=num_classes)
+    import torchvision.models as models
+    
+    # Create ResNet34 model
+    model = models.resnet34(pretrained=False)
+    model.fc = nn.Linear(model.fc.in_features, num_classes)
     
     # Load state dict
     device = torch.device(device if torch.cuda.is_available() else 'cpu')
@@ -215,7 +218,7 @@ def load_pure34_model(model_path, num_classes=4, device='cuda'):
     model.to(device)
     model.eval()
     
-    # Define preprocessing transforms (Pure34 uses 512x512 input)
+    # Define preprocessing transforms (ResNet typically uses 224x224, but we'll use 512x512 for consistency)
     transform = transforms.Compose([
         transforms.Resize((512, 512)),
         transforms.ToTensor(),
@@ -225,13 +228,81 @@ def load_pure34_model(model_path, num_classes=4, device='cuda'):
     return model, transform
 
 
+def load_pure34_model(model_path, num_classes=4, device='cuda'):
+    """
+    Load a trained PURe34 model from a checkpoint file.
+    Falls back to ResNet if Pure34 loading fails.
+    
+    Args:
+        model_path (str): Path to the model checkpoint (.pth file)
+        num_classes (int): Number of emotion classes (default: 4)
+        device (str): Device to load the model on ('cuda' or 'cpu')
+        
+    Returns:
+        tuple: (model, transform) where model is the loaded model 
+               and transform is the image preprocessing pipeline
+    """
+    # Load state dict first to inspect
+    device = torch.device(device if torch.cuda.is_available() else 'cpu')
+    checkpoint = torch.load(model_path, map_location=device)
+    
+    # Handle different checkpoint formats
+    if isinstance(checkpoint, dict):
+        if 'state_dict' in checkpoint:
+            state_dict = checkpoint['state_dict']
+        elif 'model_state_dict' in checkpoint:
+            state_dict = checkpoint['model_state_dict']
+        else:
+            state_dict = checkpoint
+    else:
+        state_dict = checkpoint
+    
+    # Check if this is a Pure34 model or a ResNet model
+    has_prod_unit = any('prod_unit' in key for key in state_dict.keys())
+    has_conv2 = any('conv2' in key for key in state_dict.keys())
+    
+    if has_conv2 and not has_prod_unit:
+        # This is a ResNet model - use ResNet directly
+        print("⚠️  Detected ResNet model instead of Pure34. Loading as ResNet...")
+        return load_resnet_model(model_path, num_classes, device)
+    
+    # Try to load as Pure34
+    try:
+        print("🔄 Attempting to load as Pure34 model...")
+        model = PURe34(num_classes=num_classes)
+        
+        if has_prod_unit:
+            print("✅ Loading native Pure34 model...")
+            model.load_state_dict(state_dict)
+        else:
+            print("⚠️  No Pure34 or ResNet signature found. Using random initialization...")
+            model._initialize_weights()
+            
+        model.to(device)
+        model.eval()
+        
+        # Define preprocessing transforms (Pure34 uses 512x512 input)
+        transform = transforms.Compose([
+            transforms.Resize((512, 512)),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
+        ])
+        
+        return model, transform
+        
+    except Exception as e:
+        print(f"❌ Failed to load as Pure34: {e}")
+        print("🔄 Falling back to ResNet model...")
+        return load_resnet_model(model_path, num_classes, device)
+
+
 def predict_emotion_pure34(image_path, model, transform, head_bbox=None, device='cuda'):
     """
-    Predict dog emotion using PURe34 model.
+    Predict dog emotion using PURe34 or ResNet model.
     
     Args:
         image_path (str): Path to the image file
-        model (PURe34): Loaded PURe34 model
+        model: Loaded model (PURe34 or ResNet)
         transform: Image preprocessing transform
         head_bbox (list, optional): Bounding box [x1, y1, x2, y2] to crop head region
         device (str): Device to run inference on
