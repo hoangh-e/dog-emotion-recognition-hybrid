@@ -180,9 +180,251 @@ class PURe34(nn.Module):
         return x
 
 
+def debug_checkpoint_structure(model_path):
+    """
+    Debug function to inspect model checkpoint structure.
+    
+    Args:
+        model_path (str): Path to the model checkpoint
+    """
+    try:
+        checkpoint = torch.load(model_path, map_location='cpu')
+        
+        # Handle different checkpoint formats
+        if isinstance(checkpoint, dict):
+            print("📦 Checkpoint format:", list(checkpoint.keys()))
+            if 'state_dict' in checkpoint:
+                state_dict = checkpoint['state_dict']
+                print("🔍 Using 'state_dict' key")
+            elif 'model_state_dict' in checkpoint:
+                state_dict = checkpoint['model_state_dict']
+                print("🔍 Using 'model_state_dict' key")
+            else:
+                state_dict = checkpoint
+                print("🔍 Using checkpoint directly as state_dict")
+        else:
+            state_dict = checkpoint
+            print("🔍 Checkpoint is direct state_dict")
+            
+        # Analyze keys to understand architecture
+        keys = list(state_dict.keys())
+        print(f"\n📊 Total parameters: {len(keys)}")
+        
+        # Count layers in each block
+        layer_analysis = {}
+        for key in keys:
+            if key.startswith('layer'):
+                layer_num = key.split('.')[0]  # e.g., 'layer1'
+                block_num = key.split('.')[1]  # e.g., '0', '1', '2'
+                if layer_num not in layer_analysis:
+                    layer_analysis[layer_num] = set()
+                layer_analysis[layer_num].add(block_num)
+        
+        print("\n🔍 Layer structure analysis:")
+        for layer, blocks in sorted(layer_analysis.items()):
+            print(f"   {layer}: {len(blocks)} blocks (indices: {sorted(blocks)})")
+            
+        # Sample keys for each layer
+        print(f"\n📋 Sample keys (first 20):")
+        for i, key in enumerate(keys[:20]):
+            print(f"   {i+1:2d}. {key}")
+        
+        if len(keys) > 20:
+            print(f"   ... and {len(keys) - 20} more keys")
+            
+        # Check for specific patterns
+        has_conv2 = any('conv2' in key for key in keys)
+        has_prod_unit = any('prod_unit' in key for key in keys)
+        has_fc = any(key.startswith('fc.') for key in keys)
+        
+        print(f"\n🔍 Architecture indicators:")
+        print(f"   Has conv2 layers: {has_conv2}")
+        print(f"   Has product units: {has_prod_unit}")
+        print(f"   Has fc layer: {has_fc}")
+        
+        if has_fc:
+            fc_weight_key = next((k for k in keys if k == 'fc.weight'), None)
+            if fc_weight_key:
+                fc_shape = state_dict[fc_weight_key].shape
+                print(f"   FC layer shape: {fc_shape} (classes: {fc_shape[0]})")
+                
+        return layer_analysis, has_conv2, has_prod_unit
+        
+    except Exception as e:
+        print(f"❌ Error analyzing checkpoint: {e}")
+        return {}, False, False
+
+
+def create_resnet_model(layer_structure, num_classes=4):
+    """
+    Create appropriate ResNet model based on layer structure analysis.
+    
+    Args:
+        layer_structure (dict): Layer structure from debug_checkpoint_structure
+        num_classes (int): Number of output classes
+        
+    Returns:
+        torch.nn.Module: Appropriate ResNet model
+    """
+    import torchvision.models as models
+    
+    # Determine ResNet variant based on layer structure
+    if not layer_structure:
+        print("⚠️  Unknown structure, defaulting to ResNet18")
+        model = models.resnet18(pretrained=False)
+    else:
+        # Count total blocks
+        total_blocks = sum(len(blocks) for blocks in layer_structure.values())
+        
+        # Map to ResNet variants based on block counts
+        # ResNet18: [2, 2, 2, 2] = 8 blocks
+        # ResNet34: [3, 4, 6, 3] = 16 blocks  
+        # ResNet50: [3, 4, 6, 3] = 16 blocks (but with bottleneck)
+        
+        layer_counts = {k: len(v) for k, v in layer_structure.items()}
+        print(f"🔍 Detected layer counts: {layer_counts}")
+        
+        if total_blocks <= 8:
+            print("🏗️  Creating ResNet18 model")
+            model = models.resnet18(pretrained=False)
+        elif total_blocks <= 16:
+            print("🏗️  Creating ResNet34 model")  
+            model = models.resnet34(pretrained=False)
+        else:
+            print("🏗️  Creating ResNet50 model")
+            model = models.resnet50(pretrained=False)
+    
+    # Modify final layer for our classes
+    if hasattr(model, 'fc'):
+        model.fc = nn.Linear(model.fc.in_features, num_classes)
+        print(f"🔧 Modified FC layer: {model.fc}")
+    
+    return model
+
+
+def load_pure34_model(model_path, num_classes=4, device='cuda'):
+    """
+    Smart model loading that handles Pure34, ResNet, and architecture mismatches.
+    
+    Args:
+        model_path (str): Path to the model checkpoint (.pth file)
+        num_classes (int): Number of emotion classes (default: 4)
+        device (str): Device to load the model on ('cuda' or 'cpu')
+        
+    Returns:
+        tuple: (model, transform) where model is the loaded model 
+               and transform is the image preprocessing pipeline
+    """
+    print(f"🔄 Loading model from: {model_path}")
+    
+    # Load and analyze checkpoint
+    print("🔍 Analyzing checkpoint structure...")
+    layer_structure, has_conv2, has_prod_unit = debug_checkpoint_structure(model_path)
+    
+    device = torch.device(device if torch.cuda.is_available() else 'cpu')
+    
+    try:
+        # First try Pure34 if it has product unit indicators
+        if has_prod_unit:
+            print("✨ Detected Pure34 architecture, loading Pure34 model...")
+            model = PURe34(num_classes=num_classes)
+            checkpoint = torch.load(model_path, map_location='cpu')
+            
+            # Handle checkpoint format
+            if isinstance(checkpoint, dict):
+                if 'state_dict' in checkpoint:
+                    state_dict = checkpoint['state_dict']
+                elif 'model_state_dict' in checkpoint:
+                    state_dict = checkpoint['model_state_dict']
+                else:
+                    state_dict = checkpoint
+            else:
+                state_dict = checkpoint
+                
+            model.load_state_dict(state_dict, strict=True)
+            
+            # Use Pure34 transforms (512x512)
+            transform = transforms.Compose([
+                transforms.Resize((512, 512)),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                                   std=[0.229, 0.224, 0.225])
+            ])
+            
+        else:
+            print("🔄 No Pure34 indicators found, loading as ResNet...")
+            
+            # Create appropriate ResNet model
+            model = create_resnet_model(layer_structure, num_classes)
+            
+            # Load checkpoint
+            checkpoint = torch.load(model_path, map_location='cpu')
+            
+            # Handle checkpoint format
+            if isinstance(checkpoint, dict):
+                if 'state_dict' in checkpoint:
+                    state_dict = checkpoint['state_dict']
+                elif 'model_state_dict' in checkpoint:
+                    state_dict = checkpoint['model_state_dict']
+                else:
+                    state_dict = checkpoint
+            else:
+                state_dict = checkpoint
+            
+            # Clean up state dict keys (remove module. prefix if present)
+            cleaned_state_dict = {}
+            for key, value in state_dict.items():
+                new_key = key.replace('module.', '') if key.startswith('module.') else key
+                cleaned_state_dict[new_key] = value
+            
+            # Load with flexibility for missing/unexpected keys
+            try:
+                model.load_state_dict(cleaned_state_dict, strict=True)
+                print("✅ Loaded model with strict=True")
+            except RuntimeError as e:
+                print(f"⚠️  Strict loading failed: {str(e)[:100]}...")
+                print("🔧 Trying with strict=False...")
+                
+                result = model.load_state_dict(cleaned_state_dict, strict=False)
+                if result.missing_keys:
+                    print(f"⚠️  Missing keys: {len(result.missing_keys)} (showing first 5)")
+                    for key in result.missing_keys[:5]:
+                        print(f"     - {key}")
+                if result.unexpected_keys:
+                    print(f"⚠️  Unexpected keys: {len(result.unexpected_keys)} (showing first 5)")
+                    for key in result.unexpected_keys[:5]:
+                        print(f"     - {key}")
+                        
+                print("✅ Loaded model with strict=False")
+            
+            # Use standard ResNet transforms (224x224)
+            transform = transforms.Compose([
+                transforms.Resize((224, 224)),
+                transforms.ToTensor(),
+                transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                                   std=[0.229, 0.224, 0.225])
+            ])
+        
+        model.to(device)
+        model.eval()
+        
+        print(f"✅ Model loaded successfully on {device}")
+        print(f"🎯 Model type: {model.__class__.__name__}")
+        print(f"📏 Input size: 512x512 (Pure34) or 224x224 (ResNet)")
+        
+        return model, transform
+        
+    except Exception as e:
+        print(f"❌ Error loading model: {e}")
+        print("\n🔍 Detailed checkpoint analysis:")
+        debug_checkpoint_structure(model_path)
+        raise
+
+
 def load_resnet_model(model_path, num_classes=4, device='cuda'):
     """
-    Load a ResNet34 model for emotion classification as fallback.
+    Load a ResNet model for emotion classification as fallback.
+    Auto-detects ResNet18 vs ResNet34 vs ResNet50 based on available layers.
     
     Args:
         model_path (str): Path to the model checkpoint (.pth file)
@@ -195,13 +437,17 @@ def load_resnet_model(model_path, num_classes=4, device='cuda'):
     """
     import torchvision.models as models
     
-    # Create ResNet34 model
-    model = models.resnet34(pretrained=False)
-    model.fc = nn.Linear(model.fc.in_features, num_classes)
+    print(f"🔄 Loading ResNet model from: {model_path}")
+    
+    # Analyze checkpoint to determine architecture
+    layer_structure, _, _ = debug_checkpoint_structure(model_path)
+    
+    # Create appropriate model
+    model = create_resnet_model(layer_structure, num_classes)
     
     # Load state dict
     device = torch.device(device if torch.cuda.is_available() else 'cpu')
-    checkpoint = torch.load(model_path, map_location=device)
+    checkpoint = torch.load(model_path, map_location='cpu')
     
     # Handle different checkpoint formats
     if isinstance(checkpoint, dict):
@@ -213,87 +459,33 @@ def load_resnet_model(model_path, num_classes=4, device='cuda'):
             state_dict = checkpoint
     else:
         state_dict = checkpoint
-        
-    model.load_state_dict(state_dict)
+    
+    # Clean up keys (remove module. prefix if needed)
+    cleaned_state_dict = {}
+    for key, value in state_dict.items():
+        new_key = key.replace('module.', '') if key.startswith('module.') else key
+        cleaned_state_dict[new_key] = value
+    
+    # Load with error handling
+    try:
+        model.load_state_dict(cleaned_state_dict, strict=False)
+        print("✅ ResNet model loaded successfully")
+    except Exception as e:
+        print(f"❌ Error loading ResNet: {e}")
+        raise
+    
+    # Create transforms
+    transform = transforms.Compose([
+        transforms.Resize((224, 224)),
+        transforms.ToTensor(),
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], 
+                           std=[0.229, 0.224, 0.225])
+    ])
+    
     model.to(device)
     model.eval()
     
-    # Define preprocessing transforms (ResNet typically uses 224x224, but we'll use 512x512 for consistency)
-    transform = transforms.Compose([
-        transforms.Resize((512, 512)),
-        transforms.ToTensor(),
-        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    ])
-    
     return model, transform
-
-
-def load_pure34_model(model_path, num_classes=4, device='cuda'):
-    """
-    Load a trained PURe34 model from a checkpoint file.
-    Falls back to ResNet if Pure34 loading fails.
-    
-    Args:
-        model_path (str): Path to the model checkpoint (.pth file)
-        num_classes (int): Number of emotion classes (default: 4)
-        device (str): Device to load the model on ('cuda' or 'cpu')
-        
-    Returns:
-        tuple: (model, transform) where model is the loaded model 
-               and transform is the image preprocessing pipeline
-    """
-    # Load state dict first to inspect
-    device = torch.device(device if torch.cuda.is_available() else 'cpu')
-    checkpoint = torch.load(model_path, map_location=device)
-    
-    # Handle different checkpoint formats
-    if isinstance(checkpoint, dict):
-        if 'state_dict' in checkpoint:
-            state_dict = checkpoint['state_dict']
-        elif 'model_state_dict' in checkpoint:
-            state_dict = checkpoint['model_state_dict']
-        else:
-            state_dict = checkpoint
-    else:
-        state_dict = checkpoint
-    
-    # Check if this is a Pure34 model or a ResNet model
-    has_prod_unit = any('prod_unit' in key for key in state_dict.keys())
-    has_conv2 = any('conv2' in key for key in state_dict.keys())
-    
-    if has_conv2 and not has_prod_unit:
-        # This is a ResNet model - use ResNet directly
-        print("⚠️  Detected ResNet model instead of Pure34. Loading as ResNet...")
-        return load_resnet_model(model_path, num_classes, device)
-    
-    # Try to load as Pure34
-    try:
-        print("🔄 Attempting to load as Pure34 model...")
-        model = PURe34(num_classes=num_classes)
-        
-        if has_prod_unit:
-            print("✅ Loading native Pure34 model...")
-            model.load_state_dict(state_dict)
-        else:
-            print("⚠️  No Pure34 or ResNet signature found. Using random initialization...")
-            model._initialize_weights()
-            
-        model.to(device)
-        model.eval()
-        
-        # Define preprocessing transforms (Pure34 uses 512x512 input)
-        transform = transforms.Compose([
-            transforms.Resize((512, 512)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-        ])
-        
-        return model, transform
-        
-    except Exception as e:
-        print(f"❌ Failed to load as Pure34: {e}")
-        print("🔄 Falling back to ResNet model...")
-        return load_resnet_model(model_path, num_classes, device)
 
 
 def predict_emotion_pure34(image_path, model, transform, head_bbox=None, device='cuda'):
