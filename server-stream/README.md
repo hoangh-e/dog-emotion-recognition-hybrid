@@ -44,45 +44,65 @@ Mở trình duyệt và truy cập: **http://localhost:5000**
 
 ### ☁️ Chạy trên Google Colab
 
-#### Bước 1: Clone repository
+#### 🎯 Cách nhanh nhất (Khuyên dùng):
 ```python
+# Clone repository và cài đặt
 !git clone https://github.com/your-repo/dog-emotion-recognition-hybrid.git
 %cd dog-emotion-recognition-hybrid/server-stream
+
+# Cài đặt tất cả dependencies
+!pip install flask werkzeug pillow opencv-python torch torchvision ultralytics numpy pandas pyngrok
+
+# Chạy setup tự động cho Colab
+exec(open('colab_setup.py').read())
 ```
 
-#### Bước 2: Cài đặt dependencies
+#### 🔧 Cách thủ công (nếu gặp lỗi):
 ```python
-!pip install -r requirements.txt
-```
-
-#### Bước 3: Chạy với ngrok (để truy cập public)
-```python
-# Cài đặt ngrok
-!pip install pyngrok
-
-# Import libraries
-from pyngrok import ngrok
+import os
+import sys
 import threading
+import time
+from pyngrok import ngrok
+
+# Di chuyển đến thư mục server
+%cd /content/dog-emotion-recognition-hybrid/server-stream
+
+# Thêm vào Python path
+sys.path.insert(0, os.getcwd())
+
+# Import và cấu hình Flask
 from app import app
+app.config['DEBUG'] = False
+app.config['TESTING'] = False
 
-# Tạo tunnel
+# Chạy Flask trong background thread
+def run_flask():
+    app.run(host='0.0.0.0', port=5000, debug=False, use_reloader=False, threaded=True)
+
+flask_thread = threading.Thread(target=run_flask, daemon=True)
+flask_thread.start()
+
+# Đợi Flask khởi động
+time.sleep(3)
+
+# Tạo ngrok tunnel
 public_url = ngrok.connect(5000)
-print(f"🌐 Public URL: {public_url}")
+print(f"🌍 Public URL: {public_url}")
+print(f"📱 Local URL: http://localhost:5000")
 
-# Chạy Flask app trong background
-def run_app():
-    app.run(host='0.0.0.0', port=5000, debug=False)
-
-thread = threading.Thread(target=run_app)
-thread.daemon = True
-thread.start()
-
-print("✅ Server đang chạy!")
-print(f"🔗 Truy cập: {public_url}")
+# Giữ server chạy
+try:
+    while True:
+        time.sleep(60)
+        print(f"🔄 Server vẫn chạy tại: {public_url}")
+except KeyboardInterrupt:
+    print("🛑 Server đã dừng")
+    ngrok.kill()
 ```
 
-#### Bước 4: Truy cập web interface
-Click vào link public URL được tạo bởi ngrok.
+#### 📖 Hướng dẫn chi tiết
+Xem file [COLAB_INSTRUCTIONS.md](COLAB_INSTRUCTIONS.md) để có hướng dẫn đầy đủ và troubleshooting.
 
 ## 📋 Hướng dẫn sử dụng
 
