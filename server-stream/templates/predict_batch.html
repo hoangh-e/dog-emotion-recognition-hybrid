@@ -1,0 +1,376 @@
+{% extends "base.html" %}
+
+{% block title %}Batch Prediction - Dog Emotion Recognition{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <h2><i class="fas fa-images"></i> Batch Image Prediction</h2>
+        <p class="text-muted">Process multiple images at once using various input methods</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-cog"></i> Batch Configuration</h5>
+            </div>
+            <div class="card-body">
+                <form id="batchForm" enctype="multipart/form-data">
+                    <!-- Model Selection -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="head_model" class="form-label">Head Detection Model *</label>
+                            <select class="form-select" id="head_model" name="head_model" required>
+                                <option value="">-- Select Head Model --</option>
+                                {% for model in head_models %}
+                                <option value="{{ model.name }}">{{ model.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="classification_model" class="form-label">Classification Model *</label>
+                            <select class="form-select" id="classification_model" name="classification_model" required>
+                                <option value="">-- Select Classification Model --</option>
+                                {% for model in classification_models %}
+                                <option value="{{ model.name }}">{{ model.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Batch Type Selection -->
+                    <div class="mb-3">
+                        <label class="form-label">Input Method *</label>
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <input type="radio" class="btn-check" name="batch_type" id="folder_option" value="folder">
+                                        <label class="btn btn-outline-primary w-100" for="folder_option">
+                                            <i class="fas fa-folder fa-2x d-block mb-2"></i>
+                                            <strong>Folder Images</strong>
+                                            <small class="d-block text-muted">Select multiple images</small>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <input type="radio" class="btn-check" name="batch_type" id="zip_option" value="zip">
+                                        <label class="btn btn-outline-warning w-100" for="zip_option">
+                                            <i class="fas fa-file-archive fa-2x d-block mb-2"></i>
+                                            <strong>ZIP File</strong>
+                                            <small class="d-block text-muted">Extract and process</small>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <input type="radio" class="btn-check" name="batch_type" id="roboflow_option" value="roboflow">
+                                        <label class="btn btn-outline-info w-100" for="roboflow_option">
+                                            <i class="fas fa-cloud-download-alt fa-2x d-block mb-2"></i>
+                                            <strong>Roboflow</strong>
+                                            <small class="d-block text-muted">Download dataset</small>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Input Options -->
+                    <div id="input_options" style="display: none;">
+                        <!-- Folder Input -->
+                        <div id="folder_input" class="input-option" style="display: none;">
+                            <div class="mb-3">
+                                <label for="folder_images" class="form-label">Select Images</label>
+                                <input type="file" class="form-control" id="folder_images" name="folder_images" multiple accept="image/*">
+                                <div class="form-text">Select multiple image files from your device</div>
+                            </div>
+                        </div>
+
+                        <!-- ZIP Input -->
+                        <div id="zip_input" class="input-option" style="display: none;">
+                            <div class="mb-3">
+                                <label for="zip_file" class="form-label">ZIP File</label>
+                                <input type="file" class="form-control" id="zip_file" name="zip_file" accept=".zip">
+                                <div class="form-text">Upload a ZIP file containing images</div>
+                            </div>
+                        </div>
+
+                        <!-- Roboflow Input -->
+                        <div id="roboflow_input" class="input-option" style="display: none;">
+                            <div class="mb-3">
+                                <label for="roboflow_script" class="form-label">Roboflow Download Script</label>
+                                <textarea class="form-control" id="roboflow_script" name="roboflow_script" rows="4" 
+                                          placeholder="Paste your Roboflow download script here..."></textarea>
+                                <div class="form-text">Example: rf = Roboflow(api_key="..."); project = rf.workspace("...").project("..."); ...</div>
+                            </div>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i> 
+                                <strong>Note:</strong> Roboflow integration is currently under development. Please use folder or ZIP upload instead.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-warning btn-lg" id="batchBtn">
+                            <i class="fas fa-play"></i> Start Batch Processing
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Progress indicator -->
+                <div id="batchProgress" class="mt-3" style="display: none;">
+                    <div class="progress mb-2">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <div class="text-center">
+                        <div class="spinner-border text-warning" role="status">
+                            <span class="visually-hidden">Processing...</span>
+                        </div>
+                        <div class="mt-2">Processing batch...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <!-- Model Status -->
+        <div class="card">
+            <div class="card-header">
+                <h6><i class="fas fa-info-circle"></i> Model Status</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="badge bg-primary fs-6">{{ head_models|length }}</div>
+                        <div class="small text-muted">Head Models</div>
+                    </div>
+                    <div class="col-6">
+                        <div class="badge bg-success fs-6">{{ classification_models|length }}</div>
+                        <div class="small text-muted">Classification Models</div>
+                    </div>
+                </div>
+                {% if head_models|length == 0 or classification_models|length == 0 %}
+                <div class="alert alert-danger mt-2 mb-0">
+                    <i class="fas fa-exclamation-circle"></i> Missing required models
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Processing Tips -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="fas fa-lightbulb"></i> Processing Tips</h6>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled mb-0">
+                    <li><i class="fas fa-check text-success"></i> Use clear, high-quality images</li>
+                    <li><i class="fas fa-check text-success"></i> Ensure dogs are visible in images</li>
+                    <li><i class="fas fa-check text-success"></i> Supported formats: JPG, PNG, GIF</li>
+                    <li><i class="fas fa-check text-success"></i> Max file size: 10MB per image</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Recent Results -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6><i class="fas fa-history"></i> Recent Results</h6>
+            </div>
+            <div class="card-body">
+                <div id="recentResults" class="text-muted text-center">
+                    No recent batch processing
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Results Section -->
+<div class="row mt-4" id="resultsSection" style="display: none;">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="fas fa-chart-bar"></i> Batch Results</h5>
+                <button id="downloadBtn" class="btn btn-sm btn-outline-primary" style="display: none;">
+                    <i class="fas fa-download"></i> Download Results
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="batchResults"></div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Check if models are available
+    const hasHeadModels = {{ head_models|length }} > 0;
+    const hasClassModels = {{ classification_models|length }} > 0;
+    
+    if (!hasHeadModels || !hasClassModels) {
+        $('#batchBtn').prop('disabled', true);
+        showAlert('Both head detection and classification models are required for batch processing.', 'warning');
+    }
+
+    // Batch type selection
+    $('input[name="batch_type"]').on('change', function() {
+        const selectedType = $(this).val();
+        
+        // Hide all input options
+        $('.input-option').hide();
+        
+        // Show selected input option
+        $('#input_options').show();
+        $(`#${selectedType}_input`).show();
+        
+        // Clear other inputs
+        if (selectedType !== 'folder') $('#folder_images').val('');
+        if (selectedType !== 'zip') $('#zip_file').val('');
+        if (selectedType !== 'roboflow') $('#roboflow_script').val('');
+    });
+
+    // File selection feedback
+    $('#folder_images').on('change', function() {
+        const fileCount = this.files.length;
+        if (fileCount > 0) {
+            $(this).next('.form-text').text(`${fileCount} images selected`);
+        }
+    });
+
+    $('#zip_file').on('change', function() {
+        const fileName = this.files[0]?.name || '';
+        if (fileName) {
+            $(this).next('.form-text').text(`Selected: ${fileName}`);
+        }
+    });
+
+    // Form submission
+    $('#batchForm').on('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        
+        // Validation
+        const headModel = $('#head_model').val();
+        const classModel = $('#classification_model').val();
+        const batchType = $('input[name="batch_type"]:checked').val();
+        
+        if (!headModel || !classModel) {
+            showAlert('Please select both models', 'danger');
+            return;
+        }
+        
+        if (!batchType) {
+            showAlert('Please select an input method', 'danger');
+            return;
+        }
+        
+        // Validate input based on type
+        let isValid = false;
+        if (batchType === 'folder') {
+            isValid = $('#folder_images')[0].files.length > 0;
+            if (!isValid) showAlert('Please select at least one image', 'danger');
+        } else if (batchType === 'zip') {
+            isValid = $('#zip_file')[0].files.length > 0;
+            if (!isValid) showAlert('Please select a ZIP file', 'danger');
+        } else if (batchType === 'roboflow') {
+            isValid = $('#roboflow_script').val().trim() !== '';
+            if (!isValid) showAlert('Please enter Roboflow script', 'danger');
+        }
+        
+        if (!isValid) return;
+        
+        // Show progress
+        $('#batchProgress').show();
+        $('#batchBtn').prop('disabled', true);
+        $('#resultsSection').hide();
+        
+        // Submit batch processing
+        $.ajax({
+            url: '/api/predict_batch',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                $('#batchProgress').hide();
+                $('#batchBtn').prop('disabled', false);
+                
+                if (response.success) {
+                    displayBatchResults(response);
+                    updateRecentResults(response);
+                } else {
+                    showAlert(response.error, 'danger');
+                }
+            },
+            error: function(xhr, status, error) {
+                $('#batchProgress').hide();
+                $('#batchBtn').prop('disabled', false);
+                showAlert('Batch processing failed: ' + error, 'danger');
+            }
+        });
+    });
+});
+
+function displayBatchResults(response) {
+    let html = `
+        <div class="row mb-3">
+            <div class="col-md-6">
+                <h6>Processing Summary</h6>
+                <ul class="list-unstyled">
+                    <li><strong>Total Images:</strong> ${response.total_images}</li>
+                    <li><strong>Result ID:</strong> ${response.result_id}</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h6>Actions</h6>
+                <a href="${response.download_url}" class="btn btn-primary btn-sm">
+                    <i class="fas fa-download"></i> Download Full Results
+                </a>
+            </div>
+        </div>
+        
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i> 
+            Batch processing completed successfully! Results are ready for download.
+        </div>
+    `;
+    
+    $('#batchResults').html(html);
+    $('#resultsSection').show();
+    
+    // Set up download button
+    $('#downloadBtn').show().off('click').on('click', function() {
+        window.open(response.download_url, '_blank');
+    });
+}
+
+function updateRecentResults(response) {
+    const now = new Date().toLocaleString();
+    const html = `
+        <div class="border-bottom pb-2 mb-2">
+            <div class="small">
+                <strong>${response.total_images} images</strong><br>
+                <span class="text-muted">${now}</span><br>
+                <a href="${response.download_url}" class="text-primary">Download</a>
+            </div>
+        </div>
+    `;
+    
+    $('#recentResults').html(html);
+}
+</script>
+{% endblock %} 

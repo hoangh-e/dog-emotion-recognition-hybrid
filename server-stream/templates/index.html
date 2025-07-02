@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block title %}Home - Dog Emotion Recognition{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="jumbotron bg-light p-5 rounded mb-4">
+            <h1 class="display-4">🐕 Dog Emotion Recognition</h1>
+            <p class="lead">Advanced AI system for detecting and classifying dog emotions using computer vision and deep learning.</p>
+            <hr class="my-4">
+            <p>Upload your models and start predicting dog emotions with high accuracy using YOLO head detection and various classification models.</p>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Add Model Module -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-plus-circle fa-3x text-primary"></i>
+                </div>
+                <h5 class="card-title">Add Model</h5>
+                <p class="card-text">Upload and manage your AI models. Support for YOLO head detection models and various emotion classification models (Pure34, Pure50, ResNet).</p>
+                <a href="{{ url_for('add_model') }}" class="btn btn-primary">
+                    <i class="fas fa-upload"></i> Upload Model
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Single Prediction Module -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-image fa-3x text-success"></i>
+                </div>
+                <h5 class="card-title">Single Prediction</h5>
+                <p class="card-text">Predict emotion for a single dog image. Get results with bounding box visualization and confidence scores.</p>
+                <a href="{{ url_for('predict_single') }}" class="btn btn-success">
+                    <i class="fas fa-search"></i> Predict Image
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Batch Prediction Module -->
+    <div class="col-md-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body text-center">
+                <div class="mb-3">
+                    <i class="fas fa-images fa-3x text-warning"></i>
+                </div>
+                <h5 class="card-title">Batch Prediction</h5>
+                <p class="card-text">Process multiple images at once. Support for folder upload, ZIP files, and Roboflow dataset integration.</p>
+                <a href="{{ url_for('predict_batch') }}" class="btn btn-warning">
+                    <i class="fas fa-layer-group"></i> Batch Process
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Features Section -->
+<div class="row mt-5">
+    <div class="col-12">
+        <h2 class="text-center mb-4">✨ Key Features</h2>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-brain fa-2x text-info mb-2"></i>
+                <h6>Multiple AI Models</h6>
+                <small class="text-muted">Support for Pure34, Pure50, ResNet architectures</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-crosshairs fa-2x text-danger mb-2"></i>
+                <h6>Head Detection</h6>
+                <small class="text-muted">YOLO-based accurate dog head localization</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-smile fa-2x text-success mb-2"></i>
+                <h6>4 Emotions</h6>
+                <small class="text-muted">Happy, Sad, Angry, Relaxed classification</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3 mb-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <i class="fas fa-download fa-2x text-primary mb-2"></i>
+                <h6>Export Results</h6>
+                <small class="text-muted">Download predictions as JSON files</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Status -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> System Status</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6>Available Models:</h6>
+                        <div id="model-status">
+                            <div class="spinner-border spinner-border-sm" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            Loading models...
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>System Requirements:</h6>
+                        <ul class="list-unstyled">
+                            <li><i class="fas fa-check text-success"></i> Python 3.8+</li>
+                            <li><i class="fas fa-check text-success"></i> PyTorch</li>
+                            <li><i class="fas fa-check text-success"></i> Ultralytics YOLO</li>
+                            <li><i class="fas fa-check text-success"></i> OpenCV</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+$(document).ready(function() {
+    // Load model status
+    $.get('/api/models', function(data) {
+        let html = '';
+        if (data.length === 0) {
+            html = '<div class="text-muted">No models uploaded yet</div>';
+        } else {
+            const headModels = data.filter(m => m.type === 'Head-object-detection');
+            const classModels = data.filter(m => m.type === 'Classification');
+            
+            html += `<div class="mb-2">
+                        <span class="badge bg-primary">${headModels.length}</span> Head Detection Models
+                     </div>`;
+            html += `<div class="mb-2">
+                        <span class="badge bg-success">${classModels.length}</span> Classification Models
+                     </div>`;
+            
+            if (headModels.length > 0 && classModels.length > 0) {
+                html += '<div class="text-success"><i class="fas fa-check"></i> Ready for prediction</div>';
+            } else {
+                html += '<div class="text-warning"><i class="fas fa-exclamation-triangle"></i> Need both model types</div>';
+            }
+        }
+        $('#model-status').html(html);
+    }).fail(function() {
+        $('#model-status').html('<div class="text-danger">Error loading model status</div>');
+    });
+});
+</script>
+{% endblock %} 
