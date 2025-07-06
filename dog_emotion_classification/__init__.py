@@ -1,40 +1,69 @@
 """
 Dog Emotion Classification Package
 
-This package provides deep learning models for classifying dog emotions 
-from images, including Pure34, Pure50, and ResNet model implementations.
+This package provides comprehensive deep learning models for dog emotion classification
+with 4 emotion classes: sad, angry, happy, relaxed.
+
+Supported architectures:
+- ResNet (ResNet50, ResNet101)
+- PURe Networks (PURe34, PURe50)
+- VGG (VGG16, VGG19)
+- DenseNet (DenseNet121, DenseNet169, DenseNet201)
+- Inception (Inception v3, GoogLeNet)
+- MobileNet (MobileNet v2, v3 Large, v3 Small)
+- EfficientNet (EfficientNet B0-B7)
+- Vision Transformer (ViT-B/16, ViT-L/16, ViT-H/14)
+- ConvNeXt (ConvNeXt Tiny, Small, Base, Large)
+- AlexNet
+- SqueezeNet (SqueezeNet 1.0, 1.1)
+- ShuffleNet (ShuffleNet v2 x0.5, x1.0, x1.5, x2.0)
+- Swin Transformer (Swin-T, Swin-S, Swin-B, Swin v2)
+- DeiT (Data-efficient Image Transformers)
+- NASNet (Neural Architecture Search)
+- MLP-Mixer (Multi-Layer Perceptron Mixer)
 """
 
-from .pure34 import PURe34, load_pure34_model, load_resnet_model, predict_emotion_pure34, debug_checkpoint_structure, create_resnet_model
-from .pure import (
-    Pure18, Pure34, Pure50, Pure101, Pure152, PUReNet, 
-    get_pure_model, PureTrainer, get_pure_transforms, 
-    predict_emotion_pure, load_pure_model, download_pure_model
-)
-from .pure50 import load_pure50_model, predict_emotion_pure50, get_pure50_transforms, create_pure50_model
-from .resnet import (
-    load_resnet_model as load_resnet_emotion_model, 
-    predict_emotion_resnet, 
-    get_resnet_transforms,
-    create_resnet_model as create_resnet_emotion_model,
-    load_resnet50_model, 
-    load_resnet101_model,
-    predict_emotion_resnet50,
-    predict_emotion_resnet101
-)
+# Import all modules
+from . import resnet
+from . import pure
+from . import pure34
+from . import pure50
+from . import vgg
+from . import densenet
+from . import inception
+from . import mobilenet
+from . import efficientnet
+from . import vit
+from . import convnext
+from . import alexnet
+from . import squeezenet
+from . import shufflenet
+from . import swin
+from . import deit
+from . import nasnet
+from . import mlp_mixer
 
-__version__ = "1.0.0"
+__version__ = "3.1.0"
+__author__ = "Dog Emotion Recognition Team"
+__description__ = "Comprehensive deep learning package for dog emotion classification with 19 algorithm families"
+
 __all__ = [
-    # Pure34 legacy module
-    "PURe34", "load_pure34_model", "load_resnet_model", "predict_emotion_pure34", 
-    "debug_checkpoint_structure", "create_resnet_model",
-    # Pure module (generic)
-    "Pure18", "Pure34", "Pure50", "Pure101", "Pure152", "PUReNet",
-    "get_pure_model", "PureTrainer", "get_pure_transforms", 
-    "predict_emotion_pure", "load_pure_model", "download_pure_model",
-    # Pure50 specific
-    "load_pure50_model", "predict_emotion_pure50", "get_pure50_transforms", "create_pure50_model",
-    # ResNet models
-    "load_resnet_emotion_model", "predict_emotion_resnet", "get_resnet_transforms", "create_resnet_emotion_model",
-    "load_resnet50_model", "load_resnet101_model", "predict_emotion_resnet50", "predict_emotion_resnet101"
+    "resnet",
+    "pure", 
+    "pure34",
+    "pure50",
+    "vgg",
+    "densenet", 
+    "inception",
+    "mobilenet",
+    "efficientnet",
+    "vit",
+    "convnext",
+    "alexnet",
+    "squeezenet", 
+    "shufflenet",
+    "swin",
+    "deit",
+    "nasnet",
+    "mlp_mixer"
 ] 

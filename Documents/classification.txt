@@ -1,0 +1,101 @@
+Dưới đây là phần trình bày các **thuật toán Deep Learning phân loại ảnh nổi bật từ 2010 đến 2025**, được tổng hợp từ tài liệu bạn cung cấp:
+
+---
+
+### 🧠 **Thời kỳ CNN kinh điển (2012–2016)**
+
+1. **AlexNet (2012)**
+
+   * CNN 8 tầng, sử dụng ReLU, dropout, huấn luyện bằng GPU.
+   * Đạt top-5 error 18.9% trên ImageNet — mở đầu kỷ nguyên deep learning.
+
+2. **VGGNet (2014)**
+
+   * Dùng bộ lọc 3×3 nhỏ, mạng rất sâu (16–19 lớp).
+   * Đơn giản, hiệu quả, nhiều phiên bản: VGG-11, 13, 16, 19.
+
+3. **GoogLeNet / Inception (2014–2016)**
+
+   * Module Inception với tích chập song song nhiều kích thước.
+   * Các phiên bản: Inception v1, v2, v3, v4, Inception-ResNet.
+
+4. **ResNet (2015)**
+
+   * Cơ chế **skip connection** (kết nối thặng dư) giúp huấn luyện mạng cực sâu dễ dàng.
+   * Phiên bản: ResNet-18, 34, 50, 101, 152, ResNet-v2.
+
+5. **DenseNet (2017)**
+
+   * Kết nối mỗi lớp với tất cả lớp trước đó (dense connectivity).
+   * Tăng cường tái sử dụng đặc trưng, giảm số tham số.
+
+---
+
+### 📱 **Mạng tối ưu cho thiết bị di động (2016–2019)**
+
+6. **SqueezeNet (2016)**
+
+   * Dùng module “Fire”, số tham số chỉ bằng 1/50 AlexNet.
+
+7. **MobileNet (v1–v3, 2017–2019)**
+
+   * Tích chập tách biệt chiều sâu (depthwise separable).
+   * V2 dùng block “inverted residual”; V3 dùng NAS + SE.
+
+8. **ShuffleNet (2018)**
+
+   * Sử dụng **grouped conv** + **channel shuffle**.
+
+---
+
+### 🛠️ **Kiến trúc do AutoML thiết kế (2018–2019)**
+
+9. **NASNet (2018)**
+
+   * Dùng reinforcement learning để tìm cell tối ưu.
+   * Phiên bản: NASNet-A Large, NASNet-Mobile.
+
+10. **EfficientNet (2019)**
+
+    * Dùng compound scaling mở rộng đồng thời depth, width, resolution.
+    * Phiên bản B0–B7, V2 (2021).
+
+---
+
+### 🔍 **Transformer & mô hình hiện đại (2020–2025)**
+
+11. **Vision Transformer (ViT, 2020)**
+
+    * Áp dụng Transformer lên ảnh patch (16×16).
+    * Cần tiền huấn luyện với dữ liệu lớn.
+
+12. **DeiT (2021)**
+
+    * ViT phiên bản huấn luyện hiệu quả với ít dữ liệu.
+
+13. **Swin Transformer (2021)**
+
+    * Transformer dùng self-attention theo cửa sổ trượt (Shifted Windows).
+    * Hiệu quả cho cả phân loại và segmentation.
+
+14. **ConvNeXt (2022)**
+
+    * Phiên bản CNN hiện đại hóa để cạnh tranh với ViT.
+    * Dùng kernel 7×7, LayerNorm, bỏ pooling, v.v.
+
+15. **PURe (2025)**
+
+    * Thay conv bằng product units trong block ResNet.
+    * PURe-34 đạt 80.27% top-1 ImageNet với ít tham số hơn ResNet-50.
+
+---
+
+### 🔬 **Các hướng mới (MLP & kết hợp CNN + Transformer)**
+
+* **MLP-Mixer, ResMLP (2021)**: Chỉ dùng MLP (không conv, không attention).
+* **CoAtNet (2021)**: Kết hợp CNN giai đoạn đầu và Transformer giai đoạn sau.
+* **ConvFormer, BoTNet, CvT, CMT**: Các biến thể lai giữa CNN và attention.
+
+---
+
+Nếu bạn cần bảng tổng hợp hoặc hình minh họa so sánh các mô hình theo năm, độ chính xác, số tham số, mình có thể tạo thêm cho bạn. Bạn muốn không?

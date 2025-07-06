@@ -1,788 +1,348 @@
-# Gói Machine Learning Hybrid cho Nhận Diện Cảm Xúc Chó
+# Dog Emotion Recognition Hybrid System
 
-Gói machine learning chuyên nghiệp cho việc nhận diện cảm xúc chó với **7 kỹ thuật ensemble learning đầy đủ** theo tài liệu nghiên cứu, kết hợp đặc trưng từ ResNet emotion detection và YOLO tail detection.
+Hệ thống nhận diện cảm xúc chó sử dụng kết hợp Deep Learning và Machine Learning với pipeline hoàn chỉnh từ YOLO head detection đến ResNet emotion classification và ensemble learning.
 
-## Tổng Quan
+## 📋 Tổng quan
 
-### Pipeline Machine Learning Ba Giai Đoạn
+Dự án này triển khai hệ thống nhận diện cảm xúc chó toàn diện với:
 
-**Giai đoạn I**: Xử lý dữ liệu từ Roboflow với tích hợp YOLO tail detection và ResNet emotion detection, kết hợp chuẩn hóa nâng cao (Z-score cho emotion features, pass-through cho tail features).
+1. **YOLO Head Detection**: Phát hiện vùng đầu chó trong ảnh
+2. **Deep Learning Classification**: 16 họ thuật toán phân loại cảm xúc từ 2010-2025
+3. **Machine Learning Pipeline**: 7 kỹ thuật ensemble learning
+4. **Meta-Learning**: Tự động lựa chọn thuật toán tối ưu
+5. **Production Pipeline**: Roboflow integration và deployment tools
 
-**Giai đoạn II**: Huấn luyện nhiều thuật toán ML với đầy đủ 7 kỹ thuật ensemble trên đặc trưng kết hợp từ ResNet emotion detection (buồn, tức giận, vui vẻ, thư giãn) và YOLO tail status detection (xuống, lên, giữa).
+### 🎯 Cảm xúc được nhận diện
+- **Sad** (buồn)
+- **Angry** (tức giận) 
+- **Happy** (vui vẻ)
+- **Relaxed** (thư giãn)
 
-**Giai đoạn III**: Meta-learner lựa chọn thuật toán tối ưu cho mỗi dự đoán dựa trên đặc trưng đầu vào.
+## ✨ Tính năng chính
 
-### 7 Kỹ Thuật Ensemble Learning Được Triển Khai
+### 🧠 Deep Learning Models
 
-1. **Bagging** - Bootstrap Aggregating giảm phương sai thông qua bootstrap sampling
-2. **Boosting** - XGBoost, AdaBoost, GradientBoosting, LightGBM học tập trung vào mẫu khó
-3. **Stacking** - Meta-learner kết hợp predictions từ heterogeneous base models
-4. **Voting** - Soft/Hard voting ensemble đơn giản hiệu quả
-5. **Negative Correlation** - Giảm tương quan giữa learners để tăng diversity
-6. **Heterogeneous** - Kết hợp vision models với classical ML models
-7. **Multi-level Deep** - Implicit ensemble qua feature fusion và engineering
+#### **CNN Kinh điển (2012-2016)**
+- **AlexNet (2012)**: CNN 8 tầng, ReLU, dropout - mở đầu kỷ nguyên deep learning
+- **VGGNet (2014)**: Bộ lọc 3×3 nhỏ, mạng sâu (VGG16, VGG19)
+- **Inception/GoogLeNet (2014-2016)**: Module Inception song song (Inception v3, GoogLeNet)
+- **ResNet (2015)**: Skip connections cho mạng cực sâu (ResNet50, ResNet101)
+- **DenseNet (2017)**: Dense connectivity (DenseNet121, 169, 201)
 
-### Đặc Điểm Nổi Bật
+#### **Mobile-Optimized Networks (2016-2019)**
+- **SqueezeNet (2016)**: Module "Fire", 1/50 tham số AlexNet (SqueezeNet 1.0, 1.1)
+- **MobileNet (2017-2019)**: Depthwise separable convolution (v2, v3 Large, v3 Small)
+- **ShuffleNet (2018)**: Grouped conv + channel shuffle (v2 x0.5, x1.0, x1.5, x2.0)
 
-- ✅ **Triển khai đầy đủ 7 kỹ thuật ensemble** theo tài liệu nghiên cứu
-- ✅ **Pipeline chuyên nghiệp** với data validation và preprocessing
-- ✅ **Tích hợp Roboflow** với YOLO + ResNet models
-- ✅ **Chuẩn hóa nâng cao** (Z-score cho emotion, pass-through cho tail)
-- ✅ **Tự động phát hiện và xử lý** các vấn đề dữ liệu
-- ✅ **Hỗ trợ đa định dạng** (CSV, TXT, XLSX) với auto-detection
-- ✅ **Cấu hình linh hoạt** cho từng kỹ thuật ensemble
-- ✅ **Comments và documentation hoàn toàn bằng tiếng Việt**
+#### **AutoML Architectures (2018-2019)**
+- **EfficientNet (2019)**: Compound scaling (EfficientNet B0-B7)
 
-## Cài Đặt
+#### **Transformer & Modern Models (2020-2025)**
+- **Vision Transformer (ViT, 2020)**: Transformer cho ảnh patch (ViT-B/16, ViT-L/16, ViT-H/14)
+- **Swin Transformer (2021)**: Shifted Windows attention (Swin-T, Swin-S, Swin-B, Swin v2)
+- **ConvNeXt (2022)**: CNN hiện đại hóa (ConvNeXt Tiny, Small, Base, Large)
+- **PURe (2025)**: Product units thay conv (PURe34, PURe50)
 
-### Yêu Cầu Hệ Thống
+### 🤖 Machine Learning Pipeline
 
-```bash
-# Core dependencies
-pip install pandas>=1.3.0 numpy>=1.21.0 scikit-learn>=1.0.0 scipy>=1.7.0 joblib>=1.1.0
+#### **7 Kỹ thuật Ensemble Learning**
+1. **Bagging**: Bootstrap Aggregating giảm phương sai
+2. **Boosting**: XGBoost, AdaBoost, GradientBoosting, LightGBM
+3. **Stacking**: Meta-model kết hợp heterogeneous base models
+4. **Voting**: Soft/Hard voting ensemble
+5. **Negative Correlation**: Giảm tương quan giữa learners
+6. **Heterogeneous**: Kết hợp vision + classical models  
+7. **Multi-level Deep**: Implicit ensemble qua feature fusion
 
-# Ensemble learning algorithms
-pip install xgboost>=1.5.0 lightgbm>=3.3.0
+#### **Classical ML Algorithms**
+- Logistic Regression (Multinomial, OvR, OvO)
+- SVM (RBF, Linear)
+- Decision Tree & Random Forest
+- Naive Bayes & K-Nearest Neighbors
+- Linear/Quadratic Discriminant Analysis
+- Multi-layer Perceptron & Perceptron
 
-# Data processing and visualization
-pip install openpyxl>=3.0.0 matplotlib>=3.5.0 seaborn>=0.11.0
+### 🎯 Meta-Learning
+- **Algorithm Selection**: Tự động chọn thuật toán tốt nhất
+- **Feature-based Selection**: Dựa trên đặc trưng emotion + tail
+- **Decision Tree Rules**: Quy tắc lựa chọn có thể diễn giải
 
-# Computer vision dependencies (optional)
-pip install opencv-python>=4.5.0 Pillow>=8.0.0 PyYAML>=6.0
-```
+### 🔧 Production Tools
+- **Roboflow Integration**: Xử lý dataset tự động
+- **Data Pipeline**: Chuẩn hóa và tiền xử lý nâng cao
+- **Bbox Validation**: Kiểm tra chất lượng head detection
+- **Colab Support**: Notebook demo và training
 
-Hoặc cài đặt tất cả từ requirements.txt:
+## 🚀 Cài đặt
 
+### Yêu cầu hệ thống
 ```bash
 pip install -r requirements.txt
 ```
 
-### Cài Đặt Gói
+### Dependencies chính
+```txt
+# Deep Learning Frameworks
+torch>=1.12.0
+torchvision>=0.13.0
+timm>=0.6.0
+transformers>=4.20.0
 
-```bash
-# Clone hoặc tải xuống gói
-# Điều hướng đến thư mục gói
-pip install -e .
+# Machine Learning
+scikit-learn>=1.0.0
+xgboost>=1.5.0
+lightgbm>=3.3.0
+
+# Computer Vision
+opencv-python>=4.5.0
+Pillow>=8.0.0
+
+# Data Processing
+pandas>=1.3.0
+numpy>=1.21.0
 ```
 
-## Sử Dụng Nhanh
+## 💻 Sử dụng
+
+### Package Usage
+
+#### **Deep Learning Models**
 
 ```python
-from dog_emotion_ml import EmotionMLClassifier, EnsembleMetaLearner, RoboflowDataProcessor
+# AlexNet
+from dog_emotion_classification.alexnet import load_alexnet_model, predict_emotion_alexnet
+model, transform = load_alexnet_model('alexnet_emotion.pth')
+result = predict_emotion_alexnet('dog_image.jpg', model, transform)
 
-# Giai đoạn I: Xử lý dữ liệu từ Roboflow (tùy chọn)
-processor = RoboflowDataProcessor('path/to/roboflow/dataset')
-dataset = processor.create_training_dataset('processed_data.csv', split='train')
+# VGG Networks
+from dog_emotion_classification.vgg import load_vgg_model, predict_emotion_vgg
+model, transform = load_vgg_model('vgg16_emotion.pth', architecture='vgg16')
+result = predict_emotion_vgg('dog_image.jpg', model, transform)
 
-# Giai đoạn II: Huấn luyện nhiều mô hình ML với chuẩn hóa nâng cao
-classifier = EmotionMLClassifier()
-classifier.load_train_dataset('train_data.csv')
-classifier.prepare_training_data(use_advanced_normalization=True)  # Z-score cho emotion
-classifier.train_all_models()
+# DenseNet
+from dog_emotion_classification.densenet import load_densenet_model, predict_emotion_densenet
+model, transform = load_densenet_model('densenet121_emotion.pth', architecture='densenet121')
+result = predict_emotion_densenet('dog_image.jpg', model, transform)
 
-# Tạo dữ liệu meta-training
-meta_data = classifier.generate_meta_training_data()
-classifier.save_meta_training_data('meta_train_data.csv')
+# Inception/GoogLeNet
+from dog_emotion_classification.inception import load_inception_model, predict_emotion_inception
+model, transform = load_inception_model('inception_v3_emotion.pth', architecture='inception_v3')
+result = predict_emotion_inception('dog_image.jpg', model, transform)
 
-# Giai đoạn III: Huấn luyện meta-learner
-meta_learner = EnsembleMetaLearner()
-meta_learner.load_meta_training_data('meta_train_data.csv')
-meta_learner.train_meta_learner()
+# MobileNet
+from dog_emotion_classification.mobilenet import load_mobilenet_model, predict_emotion_mobilenet
+model, transform = load_mobilenet_model('mobilenet_v2_emotion.pth', architecture='mobilenet_v2')
+result = predict_emotion_mobilenet('dog_image.jpg', model, transform)
 
-# Dự đoán thuật toán tốt nhất
-emotion_features = [0.1, 0.8, 0.05, 0.05]  # buồn, tức giận, vui vẻ, thư giãn
-tail_features = [0.2, 0.7, 0.1]  # xuống, lên, giữa
-best_algo, confidence = meta_learner.predict_best_algorithm(emotion_features, tail_features)
-print(f"Thuật toán được đề xuất: {best_algo}")
+# EfficientNet
+from dog_emotion_classification.efficientnet import load_efficientnet_model, predict_emotion_efficientnet
+model, transform = load_efficientnet_model('efficientnet_b0_emotion.pth', architecture='efficientnet_b0')
+result = predict_emotion_efficientnet('dog_image.jpg', model, transform)
+
+# Vision Transformer
+from dog_emotion_classification.vit import load_vit_model, predict_emotion_vit
+model, transform = load_vit_model('vit_b_16_emotion.pth', architecture='vit_b_16')
+result = predict_emotion_vit('dog_image.jpg', model, transform)
+
+# ConvNeXt
+from dog_emotion_classification.convnext import load_convnext_model, predict_emotion_convnext
+model, transform = load_convnext_model('convnext_tiny_emotion.pth', architecture='convnext_tiny')
+result = predict_emotion_convnext('dog_image.jpg', model, transform)
+
+# SqueezeNet
+from dog_emotion_classification.squeezenet import load_squeezenet_model, predict_emotion_squeezenet
+model, transform = load_squeezenet_model('squeezenet1_0_emotion.pth', architecture='squeezenet1_0')
+result = predict_emotion_squeezenet('dog_image.jpg', model, transform)
+
+# ShuffleNet
+from dog_emotion_classification.shufflenet import load_shufflenet_model, predict_emotion_shufflenet
+model, transform = load_shufflenet_model('shufflenet_v2_x1_0_emotion.pth', architecture='shufflenet_v2_x1_0')
+result = predict_emotion_shufflenet('dog_image.jpg', model, transform)
+
+# Swin Transformer
+from dog_emotion_classification.swin import load_swin_model, predict_emotion_swin
+model, transform = load_swin_model('swin_t_emotion.pth', architecture='swin_t')
+result = predict_emotion_swin('dog_image.jpg', model, transform)
+
+# ResNet (existing)
+from dog_emotion_classification.resnet import load_resnet_model, predict_emotion_resnet
+model, transform = load_resnet_model('resnet50_emotion.pth', architecture='resnet50')
+result = predict_emotion_resnet('dog_image.jpg', model, transform)
+
+# PURe Networks (existing)
+from dog_emotion_classification.pure import load_pure_model, predict_emotion_pure
+model, transform = load_pure_model('pure34_emotion.pth', architecture='pure34')
+result = predict_emotion_pure('dog_image.jpg', model, transform)
 ```
 
-## Định Dạng Dữ Liệu
-
-### Định Dạng Dataset Đầu Vào
-
-File dữ liệu (CSV, TXT, hoặc XLSX) cần chứa các cột sau:
-
-| Cột | Kiểu | Mô Tả | Ví Dụ |
-|-----|------|-------|-------|
-| filename | text | Tên file hoặc đường dẫn ảnh | "dog_001.jpg" |
-| sad | float | Độ tin cậy cảm xúc buồn (0-1) | 0.15 |
-| angry | float | Độ tin cậy cảm xúc tức giận (0-1) | 0.05 |
-| happy | float | Độ tin cậy cảm xúc vui vẻ (0-1) | 0.75 |
-| relaxed | float | Độ tin cậy cảm xúc thư giãn (0-1) | 0.05 |
-| down | float | Độ tin cậy đuôi xuống (0-1) | 0.1 |
-| up | float | Độ tin cậy đuôi lên (0-1) | 0.8 |
-| mid | float | Độ tin cậy đuôi giữa (0-1) | 0.1 |
-| label | text | Nhãn cảm xúc thực tế | "happy" |
-
-**Lưu ý:**
-- Tên cột không phân biệt hoa thường và hỗ trợ biến thể (ví dụ: "tail_down", "down_tail")
-- Gói tự động phát hiện và ánh xạ tên cột
-- Giá trị độ tin cậy cảm xúc nên tổng khoảng 1.0 cho mỗi mẫu
-- Giá trị độ tin cậy đuôi nên tổng khoảng 1.0 cho mỗi mẫu
-
-## Tài Liệu API
-
-## Lớp EmotionMLClassifier
-
-Lớp chính để huấn luyện nhiều thuật toán ML trên dữ liệu nhận diện cảm xúc chó.
-
-### Constructor
+#### **Machine Learning Pipeline**
 
 ```python
-EmotionMLClassifier(random_state=42)
-```
-
-**Tham số:**
-- `random_state` (int): Trạng thái ngẫu nhiên để có kết quả nhất quán
-
-### Phương Thức Tải Dữ Liệu
-
-#### load_train_dataset()
-
-```python
-load_train_dataset(file_path, filename_col='filename', emotion_cols=None, tail_cols=None, label_col='label')
-```
-
-Tải dataset huấn luyện từ file.
-
-**Tham số:**
-- `file_path` (str): Đường dẫn đến file dataset (CSV, TXT, hoặc XLSX)
-- `filename_col` (str): Tên cột chứa tên file
-- `emotion_cols` (list, tùy chọn): Danh sách tên cột cảm xúc (tự động phát hiện nếu None)
-- `tail_cols` (list, tùy chọn): Danh sách tên cột đuôi (tự động phát hiện nếu None)
-- `label_col` (str): Tên cột nhãn
-
-**Trả về:**
-- `pd.DataFrame`: Dataset đã tải và xử lý
-
-#### load_test_dataset()
-
-```python
-load_test_dataset(file_path, filename_col='filename', emotion_cols=None, tail_cols=None, label_col='label')
-```
-
-Tải dataset test với các tham số giống `load_train_dataset()`.
-
-#### load_test_for_train_dataset()
-
-```python
-load_test_for_train_dataset(file_path, filename_col='filename', emotion_cols=None, tail_cols=None, label_col='label')
-```
-
-Tải dataset để tạo dữ liệu meta-training với các tham số giống `load_train_dataset()`.
-
-### Phương Thức Kiểm Tra Chất Lượng Dữ Liệu
-
-#### check_data_anomalies()
-
-```python
-check_data_anomalies(dataset_name='train')
-```
-
-Kiểm tra bất thường dữ liệu bao gồm giá trị thiếu, xác suất không hợp lệ, và outliers.
-
-**Tham số:**
-- `dataset_name` (str): Dataset cần kiểm tra ('train', 'test', 'test_for_train')
-
-**Trả về:**
-- `dict`: Thông tin bất thường với đề xuất xử lý dữ liệu
-
-#### display_anomalies_summary()
-
-```python
-display_anomalies_summary(dataset_name='train')
-```
-
-Hiển thị tóm tắt định dạng về bất thường dữ liệu.
-
-**Tham số:**
-- `dataset_name` (str): Dataset cần phân tích
-
-### Phương Thức Lọc Dữ Liệu
-
-#### filter_missing_values()
-
-```python
-filter_missing_values(dataset_name='train', method='drop', fill_value=0.0)
-```
-
-Lọc giá trị thiếu từ dataset.
-
-**Tham số:**
-- `dataset_name` (str): Dataset đích
-- `method` (str): Phương thức xử lý ('drop' hoặc 'fill')
-- `fill_value` (float): Giá trị điền khi method='fill'
-
-#### filter_invalid_probabilities()
-
-```python
-filter_invalid_probabilities(dataset_name='train', method='clip')
-```
-
-Lọc giá trị xác suất không hợp lệ.
-
-**Tham số:**
-- `dataset_name` (str): Dataset đích
-- `method` (str): Phương thức xử lý ('clip' hoặc 'drop')
-
-#### filter_outliers()
-
-```python
-filter_outliers(dataset_name='train', method='iqr', factor=1.5)
-```
-
-Lọc outliers từ dataset.
-
-**Tham số:**
-- `dataset_name` (str): Dataset đích
-- `method` (str): Phương thức phát hiện ('iqr' hoặc 'zscore')
-- `factor` (float): Ngưỡng phát hiện
-
-### Phương Thức Huấn Luyện Mô Hình
-
-#### Huấn Luyện Thuật Toán Riêng Lẻ
-
-```python
-# Thuật toán cơ bản
-train_logistic_regression(multi_class='multinomial', solver='lbfgs', max_iter=1000)
-train_svm(kernel='rbf', decision_function_shape='ovr', C=1.0)
-train_decision_tree(max_depth=None, min_samples_split=2)
-train_random_forest(n_estimators=100, max_depth=None)
-train_xgboost(n_estimators=100, max_depth=6, learning_rate=0.1)
-train_adaboost(n_estimators=50, learning_rate=1.0)
-train_naive_bayes()
-train_knn(n_neighbors=5)
-train_lda()
-train_qda()
-train_mlp(hidden_layer_sizes=(100,), max_iter=500)
-
-# Meta-classifiers
-train_ovr_classifier(base_estimator_name='LogisticRegression')
-train_ovo_classifier(base_estimator_name='LogisticRegression')
-
-# Phương pháp ensemble
-train_bagging_classifier(base_estimator_name='DecisionTree', n_estimators=10)
-train_voting_classifier(voting='soft')
-train_stacking_classifier(final_estimator_name='LogisticRegression')
-```
-
-#### train_all_models()
-
-```python
-train_all_models()
-```
-
-Huấn luyện tất cả mô hình có sẵn với tham số mặc định.
-
-### Phương Thức Thông Tin Mô Hình
-
-#### list_trained_models()
-
-```python
-list_trained_models()
-```
-
-Hiển thị danh sách tất cả mô hình đã huấn luyện.
-
-#### get_model_info()
-
-```python
-get_model_info(model_name)
-```
-
-Lấy thông tin chi tiết về mô hình cụ thể.
-
-**Tham số:**
-- `model_name` (str): Tên mô hình đã huấn luyện
-
-**Trả về:**
-- Đối tượng mô hình với thông tin chi tiết
-
-### Phương Thức Dự Đoán
-
-#### predict_with_model()
-
-```python
-predict_with_model(model_name, X=None)
-```
-
-Thực hiện dự đoán với mô hình cụ thể.
-
-**Tham số:**
-- `model_name` (str): Tên mô hình đã huấn luyện
-- `X` (array-like, tùy chọn): Đặc trưng đầu vào (sử dụng dữ liệu test nếu None)
-
-**Trả về:**
-- `tuple`: (predictions, probabilities)
-
-#### evaluate_model()
-
-```python
-evaluate_model(model_name)
-```
-
-Đánh giá hiệu suất mô hình trên dữ liệu test.
-
-**Tham số:**
-- `model_name` (str): Tên mô hình đã huấn luyện
-
-**Trả về:**
-- `float`: Điểm độ chính xác
-
-### Tạo Dữ Liệu Meta-Training
-
-#### generate_meta_training_data()
-
-```python
-generate_meta_training_data()
-```
-
-Tạo dữ liệu huấn luyện cho meta-learner sử dụng dự đoán trên dataset test_for_train.
-
-**Trả về:**
-- `pd.DataFrame`: Dataset với đặc trưng gốc cộng dự đoán mô hình
-
-#### save_meta_training_data()
-
-```python
-save_meta_training_data(output_path, format='csv')
-```
-
-Lưu dữ liệu meta-training vào file.
-
-**Tham số:**
-- `output_path` (str): Đường dẫn lưu file
-- `format` (str): Định dạng đầu ra ('csv' hoặc 'xlsx')
-
-## Lớp EnsembleMetaLearner
-
-Lớp meta-learner để lựa chọn thuật toán dựa trên đặc trưng đầu vào.
-
-### Constructor
-
-```python
-EnsembleMetaLearner(random_state=42)
-```
-
-**Tham số:**
-- `random_state` (int): Trạng thái ngẫu nhiên để có kết quả nhất quán
-
-### Phương Thức Tải Dữ Liệu
-
-#### load_meta_training_data()
-
-```python
-load_meta_training_data(file_path, filename_col='filename')
-```
-
-Tải dữ liệu meta-training được tạo từ EmotionMLClassifier.
-
-**Tham số:**
-- `file_path` (str): Đường dẫn đến file dữ liệu meta-training
-- `filename_col` (str): Tên cột filename
-
-**Trả về:**
-- `pd.DataFrame`: Dataset meta-training đã tải
-
-#### load_meta_test_data()
-
-```python
-load_meta_test_data(file_path, filename_col='filename')
-```
-
-Tải dữ liệu meta-test để đánh giá.
-
-### Phương Thức Phân Tích
-
-#### analyze_algorithm_performance()
-
-```python
-analyze_algorithm_performance()
-```
-
-Phân tích hiệu suất của mỗi thuật toán để xác định lựa chọn tốt nhất.
-
-**Trả về:**
-- `dict`: Kết quả phân tích hiệu suất
-
-#### analyze_algorithm_distribution()
-
-```python
-analyze_algorithm_distribution()
-```
-
-Phân tích phân phối lựa chọn thuật toán.
-
-**Trả về:**
-- `dict`: Phân tích phân phối thuật toán
-
-### Phương Thức Huấn Luyện
-
-#### train_meta_learner()
-
-```python
-train_meta_learner(algorithm='DecisionTree', **kwargs)
-```
-
-Huấn luyện meta-learner để lựa chọn thuật toán.
-
-**Tham số:**
-- `algorithm` (str): Thuật toán meta-learning ('DecisionTree', 'RandomForest', 'LogisticRegression')
-- `**kwargs`: Tham số bổ sung cho thuật toán
-
-**Trả về:**
-- Meta-model đã huấn luyện
-
-### Phương Thức Dự Đoán
-
-#### predict_best_algorithm()
-
-```python
-predict_best_algorithm(emotion_features, tail_features)
-```
-
-Dự đoán thuật toán tốt nhất cho đặc trưng đã cho.
-
-**Tham số:**
-- `emotion_features` (array-like): Giá trị đặc trưng [buồn, tức giận, vui vẻ, thư giãn]
-- `tail_features` (array-like): Giá trị đặc trưng [xuống, lên, giữa]
-
-**Trả về:**
-- `tuple`: (thuật toán dự đoán, điểm độ tin cậy)
-
-#### predict_best_algorithms_batch()
-
-```python
-predict_best_algorithms_batch(X)
-```
-
-Dự đoán thuật toán tốt nhất cho một batch mẫu.
-
-**Tham số:**
-- `X` (array-like): Ma trận đặc trưng (n_samples, 7_features)
-
-**Trả về:**
-- `tuple`: (thuật toán dự đoán, điểm độ tin cậy)
-
-### Phương Thức Đánh Giá
-
-#### evaluate_meta_learner()
-
-```python
-evaluate_meta_learner()
-```
-
-Đánh giá meta-learner trên dữ liệu test.
-
-**Trả về:**
-- `dict`: Kết quả đánh giá
-
-#### get_feature_importance()
-
-```python
-get_feature_importance()
-```
-
-Lấy tầm quan trọng đặc trưng từ meta-learner.
-
-**Trả về:**
-- `dict`: Điểm tầm quan trọng đặc trưng
-
-#### get_algorithm_selection_rules()
-
-```python
-get_algorithm_selection_rules(max_depth=3)
-```
-
-Trích xuất quy tắc quyết định từ meta-learner (nếu là decision tree).
-
-**Tham số:**
-- `max_depth` (int): Độ sâu tối đa để trích xuất quy tắc
-
-**Trả về:**
-- `list`: Danh sách quy tắc quyết định
-
-### Phương Thức Lưu/Tải Mô Hình
-
-#### save_meta_model()
-
-```python
-save_meta_model(model_path)
-```
-
-Lưu meta-model đã huấn luyện.
-
-**Tham số:**
-- `model_path` (str): Đường dẫn lưu mô hình
-
-#### load_meta_model()
-
-```python
-load_meta_model(model_path)
-```
-
-Tải meta-model đã huấn luyện.
-
-**Tham số:**
-- `model_path` (str): Đường dẫn tải mô hình
-
-#### demonstrate_prediction()
-
-```python
-demonstrate_prediction(sample_features=None)
-```
-
-Demo lựa chọn thuật toán với đặc trưng mẫu.
-
-**Tham số:**
-- `sample_features` (list, tùy chọn): Đặc trưng [buồn, tức giận, vui vẻ, thư giãn, xuống, lên, giữa]
-
-## Ví Dụ Sử Dụng Hoàn Chỉnh
-
-### Ví Dụ 1: Pipeline Cơ Bản
-
-```python
-from dog_emotion_ml import EmotionMLClassifier, EnsembleMetaLearner
-
-# Bước 1: Khởi tạo và tải dữ liệu
-classifier = EmotionMLClassifier(random_state=42)
-classifier.load_train_dataset('data/train.csv')
-classifier.load_test_dataset('data/test.csv')
-classifier.load_test_for_train_dataset('data/test_for_train.csv')
-
-# Bước 2: Kiểm tra và làm sạch dữ liệu
-classifier.display_anomalies_summary('train')
-classifier.filter_missing_values('train', method='fill')
-classifier.filter_invalid_probabilities('train', method='clip')
-
-# Bước 3: Huấn luyện mô hình
-classifier.train_all_models()
-
-# Bước 4: Đánh giá mô hình
-classifier.list_trained_models()
-for model_name in classifier.trained_models:
-    accuracy = classifier.evaluate_model(model_name)
-    print(f"{model_name}: {accuracy:.4f}")
-
-# Bước 5: Tạo dữ liệu meta-training
-meta_data = classifier.generate_meta_training_data()
-classifier.save_meta_training_data('meta_train.csv')
-
-# Bước 6: Huấn luyện meta-learner
-meta_learner = EnsembleMetaLearner(random_state=42)
-meta_learner.load_meta_training_data('meta_train.csv')
-meta_learner.train_meta_learner(algorithm='DecisionTree')
-
-# Bước 7: Sử dụng meta-learner
-emotion_features = [0.1, 0.2, 0.6, 0.1]  # buồn, tức giận, vui vẻ, thư giãn
-tail_features = [0.1, 0.8, 0.1]  # xuống, lên, giữa
-best_algo, confidence = meta_learner.predict_best_algorithm(emotion_features, tail_features)
-print(f"Thuật toán được đề xuất: {best_algo}")
-```
-
-### Ví Dụ 2: Sử Dụng Với Dữ Liệu Thực
-
-```python
-import pandas as pd
 from dog_emotion_ml import EmotionMLClassifier
 
-# Tải dữ liệu từ file Excel
+# Initialize classifier
 classifier = EmotionMLClassifier()
-train_data = classifier.load_train_dataset('real_data.xlsx')
 
-# Kiểm tra cấu trúc dữ liệu
-print("Cấu trúc dữ liệu:")
-print(train_data.info())
-print("\nMẫu dữ liệu:")
-print(train_data.head())
+# Load datasets
+classifier.load_train_dataset('train_data.csv')
+classifier.load_test_dataset('test_data.csv')
+classifier.load_test_for_train_dataset('test_for_train_data.csv')
 
-# Huấn luyện mô hình cụ thể
-classifier.train_xgboost(n_estimators=200, max_depth=8)
-classifier.train_random_forest(n_estimators=150)
-classifier.train_svm(kernel='rbf', C=2.0)
+# Train all algorithms with 7 ensemble techniques
+classifier.train_all_models()
 
-# Đánh giá chi tiết
-for model_name in classifier.trained_models:
-    print(f"\n=== {model_name} ===")
-    classifier.get_model_info(model_name)
-    accuracy = classifier.evaluate_model(model_name)
+# Generate meta-training data for algorithm selection
+meta_data = classifier.generate_meta_training_data()
+classifier.save_meta_training_data('meta_training_data.csv')
 ```
 
-### Ví Dụ 3: Batch Prediction
+#### **Meta-Learning Algorithm Selection**
 
 ```python
-import numpy as np
 from dog_emotion_ml import EnsembleMetaLearner
 
-# Tải meta-learner đã huấn luyện
+# Initialize meta-learner
 meta_learner = EnsembleMetaLearner()
-meta_learner.load_meta_model('trained_meta_model.pkl')
 
-# Chuẩn bị dữ liệu batch
-batch_features = np.array([
-    [0.1, 0.2, 0.6, 0.1, 0.1, 0.8, 0.1],  # Mẫu 1
-    [0.8, 0.1, 0.05, 0.05, 0.7, 0.2, 0.1],  # Mẫu 2
-    [0.05, 0.05, 0.05, 0.85, 0.2, 0.1, 0.7],  # Mẫu 3
-])
+# Load meta-training data
+meta_learner.load_meta_training_data('meta_training_data.csv')
 
-# Dự đoán batch
-predicted_algos, confidences = meta_learner.predict_best_algorithms_batch(batch_features)
+# Train meta-learner
+meta_learner.train_meta_learner(algorithm='RandomForest')
 
-for i, (algo, conf) in enumerate(zip(predicted_algos, confidences)):
-    print(f"Mẫu {i+1}: {algo} (độ tin cậy: {conf.max():.3f})")
+# Predict best algorithm for new features
+emotion_features = [0.8, 0.1, 0.05, 0.05]  # [sad, angry, happy, relaxed]
+tail_features = [0.2, 0.7, 0.1]            # [down, up, mid]
+best_algo, confidence = meta_learner.predict_best_algorithm(emotion_features, tail_features)
+print(f"Recommended algorithm: {best_algo}")
 ```
 
-## Cấu Trúc Thư Mục
+#### **Data Pipeline & Roboflow Integration**
+
+```python
+from dog_emotion_ml import RoboflowDataProcessor
+
+# Process Roboflow dataset
+processor = RoboflowDataProcessor(
+    dataset_path='path/to/roboflow/dataset',
+    yolo_tail_model_path='yolo_tail.pt',
+    resnet_emotion_model_path='resnet_emotion.pth'
+)
+
+# Create training dataset
+dataset = processor.create_training_dataset('output_dataset.csv', split='train')
+```
+
+## 📊 Hiệu năng
+
+### Deep Learning Models
+- **16 họ thuật toán** từ AlexNet (2012) đến Swin Transformer (2021)
+- **50+ biến thể kiến trúc** với input size và parameters khác nhau
+- **Head bbox cropping** để tăng độ chính xác
+- **Ensemble ready** tích hợp với ML pipeline
+
+### Ensemble Learning
+- **7 kỹ thuật ensemble** theo tài liệu nghiên cứu
+- **20+ base algorithms** kết hợp đa dạng
+- **Meta-learning selection** tự động chọn thuật toán
+- **Cross-validation** đánh giá robust
+
+## 🛠️ Requirements
+
+```txt
+# Core dependencies for dog emotion recognition ML package
+pandas>=1.3.0
+numpy>=1.21.0
+scikit-learn>=1.0.0
+scipy>=1.7.0
+joblib>=1.1.0
+
+# Ensemble learning algorithms
+xgboost>=1.5.0
+lightgbm>=3.3.0
+
+# Data processing and visualization
+openpyxl>=3.0.0
+matplotlib>=3.5.0
+seaborn>=0.11.0
+
+# Computer vision and image processing
+opencv-python>=4.5.0
+Pillow>=8.0.0
+
+# Deep learning frameworks for classification algorithms
+torch>=1.12.0
+torchvision>=0.13.0
+timm>=0.6.0
+transformers>=4.20.0
+
+# YOLO detection (optional for tail detection)
+# ultralytics>=8.0.0
+
+# YAML processing for Roboflow data.yaml
+PyYAML>=6.0
+
+# Optional dependencies for advanced features
+# Install with: pip install -r requirements.txt 
+cursor-notebook-mcp==0.2.3
+```
+
+## 📁 Cấu trúc dự án
 
 ```
 dog-emotion-recognition-hybrid/
-├── dog_emotion_ml/              # Gói chính
-│   ├── __init__.py             # Khởi tạo gói
-│   ├── emotion_ml.py           # Lớp EmotionMLClassifier
-│   ├── ensemble_meta.py        # Lớp EnsembleMetaLearner
-│   └── utils.py                # Các hàm tiện ích
-├── Documents/                   # Tài liệu kỹ thuật
-│   ├── khái quát.txt           # Tổng quan dự án
-│   ├── Các thuật toán ML Multi-Classification.md
-│   └── Các kỹ thuật Ensemble ML.md
-├── Dog_Emotion_Recognition_Demo.ipynb  # Demo notebook
-├── colab_demo.py               # Script demo cho Colab
-├── example_usage.py            # Ví dụ sử dụng
-├── requirements.txt            # Dependencies
-├── setup.py                    # Cài đặt gói
-└── README.md                   # Tài liệu này
+├── dog_emotion_classification/          # Deep Learning Models Package
+│   ├── __init__.py
+│   ├── alexnet.py                      # AlexNet (2012)
+│   ├── vgg.py                          # VGGNet (2014)
+│   ├── inception.py                    # Inception/GoogLeNet (2014-2016)
+│   ├── resnet.py                       # ResNet (2015)
+│   ├── densenet.py                     # DenseNet (2017)
+│   ├── squeezenet.py                   # SqueezeNet (2016)
+│   ├── mobilenet.py                    # MobileNet (2017-2019)
+│   ├── shufflenet.py                   # ShuffleNet (2018)
+│   ├── efficientnet.py                 # EfficientNet (2019)
+│   ├── vit.py                          # Vision Transformer (2020)
+│   ├── swin.py                         # Swin Transformer (2021)
+│   ├── convnext.py                     # ConvNeXt (2022)
+│   ├── pure.py                         # PURe Networks (2025)
+│   ├── pure34.py                       # PURe34 specific
+│   └── pure50.py                       # PURe50 specific
+├── dog_emotion_ml/                     # ML Pipeline Package
+│   ├── __init__.py
+│   ├── emotion_ml.py                   # Main ML classifier
+│   ├── ensemble_config.py              # Ensemble configurations
+│   ├── ensemble_meta.py                # Meta-learning
+│   ├── data_pipeline.py                # Data processing
+│   └── utils.py                        # Utilities
+├── server-stream/                      # Web Application
+├── Documents/                          # Documentation
+├── requirements.txt                    # Dependencies
+└── README.md                          # This file
 ```
 
-## Thuật Toán Được Hỗ Trợ
+## 🤝 Đóng góp
 
-### Thuật Toán Cơ Bản
-- **Logistic Regression**: Hồi quy logistic đa lớp
-- **Support Vector Machine**: SVM với kernel RBF/Linear
-- **Decision Tree**: Cây quyết định
-- **Random Forest**: Rừng ngẫu nhiên
-- **XGBoost**: Gradient boosting tối ưu
-- **AdaBoost**: Adaptive boosting
-- **Naive Bayes**: Bayes ngây thơ Gaussian
-- **K-Nearest Neighbors**: K láng giềng gần nhất
-- **Linear/Quadratic Discriminant Analysis**: Phân tích phân biệt
-- **Multi-layer Perceptron**: Mạng nơ-ron đa lớp
-
-### Phương Pháp Meta-Classification
-- **One-vs-Rest**: Một-so-với-còn-lại
-- **One-vs-One**: Một-so-với-một
-
-### Phương Pháp Ensemble
-- **Bagging**: Bootstrap aggregating
-- **Voting**: Bỏ phiếu cứng/mềm
-- **Stacking**: Xếp chồng với meta-learner
-
-## Tính Năng Nâng Cao
-
-### Xử Lý Dữ Liệu
-- Tự động phát hiện cột
-- Kiểm tra chất lượng dữ liệu
-- Lọc giá trị thiếu và outliers
-- Chuẩn hóa xác suất
-
-### Phân Tích Mô Hình
-- Đánh giá hiệu suất chi tiết
-- Tầm quan trọng đặc trưng
-- Quy tắc quyết định
-- Phân tích phân phối thuật toán
-
-### Tiện Ích
-- Tạo dữ liệu mẫu
-- Trực quan hóa kết quả
-- Xuất báo cáo Excel
-- Lưu/tải mô hình
-
-## Xử Lý Sự Cố
-
-### Lỗi Thường Gặp
-
-**1. ImportError: No module named 'dog_emotion_ml'**
-```bash
-# Cài đặt gói ở chế độ development
-pip install -e .
-```
-
-**2. ValueError: Could not find column for emotion**
-```python
-# Chỉ định rõ tên cột
-classifier.load_train_dataset('data.csv', 
-                             emotion_cols=['sad_conf', 'angry_conf', 'happy_conf', 'relaxed_conf'],
-                             tail_cols=['tail_down', 'tail_up', 'tail_mid'])
-```
-
-**3. Lỗi xác suất không hợp lệ**
-```python
-# Sử dụng filter để làm sạch dữ liệu
-classifier.filter_invalid_probabilities('train', method='clip')
-```
-
-**4. Lỗi thiếu dữ liệu**
-```python
-# Xử lý giá trị thiếu
-classifier.filter_missing_values('train', method='fill', fill_value=0.0)
-```
-
-### Tối Ưu Hiệu Suất
-
-**1. Giảm số lượng thuật toán**
-```python
-# Chỉ huấn luyện các thuật toán chính
-classifier.train_xgboost()
-classifier.train_random_forest()
-classifier.train_svm()
-```
-
-**2. Tối ưu tham số**
-```python
-# Sử dụng tham số tối ưu cho dữ liệu lớn
-classifier.train_xgboost(n_estimators=50, max_depth=4)
-classifier.train_random_forest(n_estimators=50)
-```
-
-**3. Sử dụng cross-validation**
-```python
-# Đánh giá mô hình với cross-validation
-from sklearn.model_selection import cross_val_score
-scores = cross_val_score(classifier.trained_models['XGBoost'], X, y, cv=5)
-```
-
-## Đóng Góp
-
-Chúng tôi hoan nghênh các đóng góp từ cộng đồng. Vui lòng:
-
-1. Fork repository
+1. Fork dự án
 2. Tạo feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit thay đổi (`git commit -m 'Add some AmazingFeature'`)
+3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to branch (`git push origin feature/AmazingFeature`)
 5. Mở Pull Request
 
-## Giấy Phép
+## 📝 License
 
-Dự án này được phân phối dưới giấy phép MIT. Xem file `LICENSE` để biết thêm chi tiết.
+Distributed under the MIT License. See `LICENSE` for more information.
 
-## Liên Hệ
+## 📞 Liên hệ
 
-- **Tác giả**: Dog Emotion Recognition Team
-- **Email**: [email liên hệ]
-- **GitHub**: https://github.com/hoangh-e/dog-emotion-recognition-hybrid
+Dog Emotion Recognition Team
+- Email: contact@dogemotionrecognition.com
+- Project Link: [https://github.com/username/dog-emotion-recognition-hybrid](https://github.com/username/dog-emotion-recognition-hybrid)
 
-## Trích Dẫn
+## 🙏 Acknowledgments
 
-Nếu bạn sử dụng gói này trong nghiên cứu, vui lòng trích dẫn:
-
-```bibtex
-@software{dog_emotion_recognition_hybrid,
-  title={Dog Emotion Recognition Hybrid ML Package},
-  author={Dog Emotion Recognition Team},
-  year={2024},
-  url={https://github.com/hoangh-e/dog-emotion-recognition-hybrid}
-}
-```
-
----
-
-*Tài liệu này được cập nhật lần cuối: [Ngày hiện tại]*
+- [PyTorch](https://pytorch.org/) - Deep Learning Framework
+- [Scikit-learn](https://scikit-learn.org/) - Machine Learning Library
+- [Roboflow](https://roboflow.com/) - Computer Vision Platform
+- [YOLO](https://github.com/ultralytics/ultralytics) - Object Detection
+- [Timm](https://github.com/rwightman/pytorch-image-models) - PyTorch Image Models
