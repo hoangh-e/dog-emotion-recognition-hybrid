@@ -147,7 +147,7 @@ def create_simple_deit_model(num_classes=4, device='cuda'):
         def __init__(self, num_classes=4):
             super().__init__()
             self.patch_embed = nn.Conv2d(3, 384, kernel_size=16, stride=16)
-            self.pos_embed = nn.Parameter(torch.randn(1, 197, 384))
+            self.pos_embed = nn.Parameter(torch.randn(1, 198, 384))
             self.cls_token = nn.Parameter(torch.randn(1, 1, 384))
             self.dist_token = nn.Parameter(torch.randn(1, 1, 384))
             
