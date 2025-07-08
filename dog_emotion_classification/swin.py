@@ -109,7 +109,7 @@ def load_swin_model(model_path, architecture='swin_t', num_classes=4, input_size
 
 
 def predict_emotion_swin(image_path, model, transform, head_bbox=None, device='cuda',
-                        emotion_classes=['sad', 'angry', 'happy', 'relaxed']):
+                        emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
     """
     Predict dog emotion using Swin Transformer model.
     

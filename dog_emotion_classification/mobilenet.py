@@ -110,7 +110,7 @@ def load_mobilenet_model(model_path, architecture='mobilenet_v2', num_classes=4,
 
 
 def predict_emotion_mobilenet(image_path, model, transform, head_bbox=None, device='cuda',
-                             emotion_classes=['sad', 'angry', 'happy', 'relaxed']):
+                             emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
     """
     Predict dog emotion using MobileNet model.
     

@@ -392,7 +392,7 @@ def load_senet_model(model_path, architecture='se_resnet50', num_classes=4, inpu
 
 
 def predict_emotion_senet(image_path, model, transform, head_bbox=None, device='cuda',
-                         emotion_classes=['sad', 'angry', 'happy', 'relaxed']):
+                         emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
     """
     Predict dog emotion using SE-Net model.
     

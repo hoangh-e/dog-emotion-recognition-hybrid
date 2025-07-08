@@ -107,7 +107,7 @@ def load_resnet_model(model_path, architecture='resnet50', num_classes=4, input_
 
 
 def predict_emotion_resnet(image_path, model, transform, head_bbox=None, device='cuda',
-                          emotion_classes=['sad', 'angry', 'happy', 'relaxed']):
+                          emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
     """
     Predict dog emotion using ResNet model.
     

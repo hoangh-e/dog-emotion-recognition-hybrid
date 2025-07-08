@@ -503,7 +503,7 @@ def predict_emotion_pure34(image_path, model, transform, head_bbox=None, device=
         dict: Emotion probabilities and prediction status
               {'sad': float, 'angry': float, 'happy': float, 'relaxed': float, 'predicted': bool}
     """
-    emotion_classes = ['sad', 'angry', 'happy', 'relaxed']
+    emotion_classes = ['angry', 'happy', 'relaxed', 'sad']
     
     try:
         # Load and preprocess image

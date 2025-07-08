@@ -329,7 +329,7 @@ def load_ecanet_model(model_path, architecture='eca_resnet50', num_classes=4, in
 
 
 def predict_emotion_ecanet(image_path, model, transform, head_bbox=None, device='cuda',
-                          emotion_classes=['sad', 'angry', 'happy', 'relaxed']):
+                          emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
     """
     Predict dog emotion using ECA-Net model.
     

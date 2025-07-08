@@ -398,7 +398,7 @@ def load_coatnet_model(model_path, architecture='coatnet_0', num_classes=4, inpu
 
 
 def predict_emotion_coatnet(image_path, model, transform, head_bbox=None, device='cuda',
-                           emotion_classes=['sad', 'angry', 'happy', 'relaxed']):
+                           emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
     """
     Predict dog emotion using CoAtNet model.
     

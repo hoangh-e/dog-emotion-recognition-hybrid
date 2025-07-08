@@ -545,7 +545,7 @@ def get_pure_transforms(input_size=512, is_training=True):
 
 
 def predict_emotion_pure(image_path, model, transform, head_bbox=None, device='cuda', 
-                        emotion_classes=['sad', 'angry', 'happy', 'relaxed']):
+                        emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
     """
     Predict dog emotion using Pure model.
     

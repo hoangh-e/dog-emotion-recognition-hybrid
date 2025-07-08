@@ -113,7 +113,7 @@ def load_squeezenet_model(model_path, architecture='squeezenet1_0', num_classes=
 
 
 def predict_emotion_squeezenet(image_path, model, transform, head_bbox=None, device='cuda',
-                              emotion_classes=['sad', 'angry', 'happy', 'relaxed']):
+                              emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
     """
     Predict dog emotion using SqueezeNet model.
     

@@ -111,7 +111,7 @@ def load_efficientnet_model(model_path, architecture='efficientnet_b0', num_clas
 
 
 def predict_emotion_efficientnet(image_path, model, transform, head_bbox=None, device='cuda',
-                                 emotion_classes=['sad', 'angry', 'happy', 'relaxed']):
+                                 emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
     """
     Predict dog emotion using EfficientNet model.
     

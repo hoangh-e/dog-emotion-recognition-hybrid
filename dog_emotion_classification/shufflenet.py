@@ -109,7 +109,7 @@ def load_shufflenet_model(model_path, architecture='shufflenet_v2_x1_0', num_cla
 
 
 def predict_emotion_shufflenet(image_path, model, transform, head_bbox=None, device='cuda',
-                              emotion_classes=['sad', 'angry', 'happy', 'relaxed']):
+                              emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
     """
     Predict dog emotion using ShuffleNet model.
     

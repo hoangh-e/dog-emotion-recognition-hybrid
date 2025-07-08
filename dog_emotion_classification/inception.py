@@ -116,7 +116,7 @@ def load_inception_model(model_path, architecture='inception_v3', num_classes=4,
 
 
 def predict_emotion_inception(image_path, model, transform, head_bbox=None, device='cuda',
-                             emotion_classes=['sad', 'angry', 'happy', 'relaxed']):
+                             emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
     """
     Predict dog emotion using Inception model.
     

@@ -364,7 +364,7 @@ def load_maxvit_model(model_path, architecture='maxvit_tiny', num_classes=4, inp
 
 
 def predict_emotion_maxvit(image_path, model, transform, head_bbox=None, device='cuda',
-                          emotion_classes=['sad', 'angry', 'happy', 'relaxed']):
+                          emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
     """
     Predict dog emotion using MaxViT model.
     

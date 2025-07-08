@@ -41,7 +41,7 @@ def load_pure50_model(model_path, num_classes=4, input_size=512, device='cuda'):
 
 
 def predict_emotion_pure50(image_path, model, transform, head_bbox=None, device='cuda',
-                          emotion_classes=['sad', 'angry', 'happy', 'relaxed']):
+                          emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
     """
     Predict dog emotion using Pure50 model.
     

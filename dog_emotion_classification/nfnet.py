@@ -336,7 +336,7 @@ def load_nfnet_model(model_path, architecture='nfnet_f0', num_classes=4, input_s
 
 
 def predict_emotion_nfnet(image_path, model, transform, head_bbox=None, device='cuda',
-                         emotion_classes=['sad', 'angry', 'happy', 'relaxed']):
+                         emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
     """
     Predict dog emotion using NFNet model.
     

@@ -206,7 +206,7 @@ def predict_emotion_deit(model, image_path, transforms_fn=None, device='cuda'):
     Returns:
         Dictionary with emotion predictions
     """
-    emotion_classes = ['sad', 'angry', 'happy', 'relaxed']
+    emotion_classes = ['angry', 'happy', 'relaxed', 'sad']
     
     try:
         # Load and preprocess image
@@ -339,6 +339,135 @@ DEIT_VARIANTS = {
         'params': '86M'
     }
 }
+
+
+def load_deit_model_standard(model_path, architecture='deit_small', num_classes=4, input_size=224, device='cuda'):
+    """
+    Standardized load function for DeiT model to match other modules.
+    
+    Parameters:
+    -----------
+    model_path : str
+        Path to the saved model checkpoint
+    architecture : str
+        DeiT architecture ('deit_tiny', 'deit_small', 'deit_base')
+    num_classes : int
+        Number of emotion classes (default: 4)
+    input_size : int
+        Input image size (default: 224)
+    device : str
+        Device to load model on ('cuda' or 'cpu')
+        
+    Returns:
+    --------
+    tuple
+        (model, transform) - loaded model and preprocessing transform
+    """
+    print(f"🔄 Loading {architecture.upper()} model from: {model_path}")
+    
+    # Map architecture names
+    variant_map = {
+        'deit_tiny': 'tiny',
+        'deit_small': 'small', 
+        'deit_base': 'base'
+    }
+    variant = variant_map.get(architecture, 'small')
+    
+    # Load model using existing function
+    model = load_deit_model(model_path, variant, num_classes, device)
+    
+    # Create transform
+    transform = get_deit_transforms(input_size, is_training=False)
+    
+    print(f"✅ DeiT model loaded successfully on {device}")
+    print(f"🎯 Model type: {architecture.upper()}")
+    print(f"📏 Input size: {input_size}x{input_size}")
+    
+    return model, transform
+
+
+def predict_emotion_deit_standard(image_path, model, transform, head_bbox=None, device='cuda',
+                                 emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+    """
+    Standardized predict function for DeiT model to match other modules.
+    
+    Parameters:
+    -----------
+    image_path : str
+        Path to the input image
+    model : torch.nn.Module
+        Loaded DeiT model
+    transform : torchvision.transforms.Compose
+        Preprocessing transform
+    head_bbox : list, optional
+        Bounding box [x1, y1, x2, y2] to crop head region
+    device : str
+        Device for inference
+    emotion_classes : list
+        List of emotion class names
+        
+    Returns:
+    --------
+    dict
+        Emotion predictions with scores and predicted flag
+    """
+    try:
+        # Load and preprocess image
+        if isinstance(image_path, str):
+            image = Image.open(image_path).convert('RGB')
+        else:
+            image = image_path.convert('RGB')
+        
+        # Crop head region if bbox provided
+        if head_bbox is not None:
+            x1, y1, x2, y2 = head_bbox
+            width, height = image.size
+            x1 = max(0, min(int(x1), width))
+            y1 = max(0, min(int(y1), height))
+            x2 = max(x1, min(int(x2), width))
+            y2 = max(y1, min(int(y2), height))
+            image = image.crop((x1, y1, x2, y2))
+        
+        # Use existing prediction function
+        result = predict_emotion_deit(model, image, transform, device)
+        
+        # Convert to standardized format
+        emotion_scores = {}
+        if 'probabilities' in result:
+            for emotion in emotion_classes:
+                emotion_scores[emotion] = result['probabilities'].get(emotion, 0.0)
+        else:
+            # Fallback if probabilities not available
+            for emotion in emotion_classes:
+                emotion_scores[emotion] = 0.25
+        
+        emotion_scores['predicted'] = result.get('predicted_flag', False)
+        
+        return emotion_scores
+        
+    except Exception as e:
+        print(f"❌ Error in DeiT emotion prediction: {e}")
+        emotion_scores = {emotion: 0.0 for emotion in emotion_classes}
+        emotion_scores['predicted'] = False
+        return emotion_scores
+
+
+# Alias functions for consistency with other modules
+# Note: Renamed to avoid conflicts with existing functions
+
+def load_deit_model_main(model_path, architecture='deit_small', num_classes=4, input_size=224, device='cuda'):
+    """
+    Main load function for DeiT model (standardized version).
+    """
+    return load_deit_model_standard(model_path, architecture, num_classes, input_size, device)
+
+
+def predict_emotion_deit_main(image_path, model, transform, head_bbox=None, device='cuda',
+                             emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+    """
+    Main predict function for DeiT model (standardized version).
+    """
+    return predict_emotion_deit_standard(image_path, model, transform, head_bbox, device, emotion_classes)
 
 
 if __name__ == "__main__":

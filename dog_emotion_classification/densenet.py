@@ -110,7 +110,7 @@ def load_densenet_model(model_path, architecture='densenet121', num_classes=4, i
 
 
 def predict_emotion_densenet(image_path, model, transform, head_bbox=None, device='cuda',
-                            emotion_classes=['sad', 'angry', 'happy', 'relaxed']):
+                            emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
     """
     Predict dog emotion using DenseNet model.
     
