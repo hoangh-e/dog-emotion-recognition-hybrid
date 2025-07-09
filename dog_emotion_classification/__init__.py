@@ -31,6 +31,11 @@ Supported architectures:
 - NFNet (Normalizer-Free Networks) ✅
 - ECA-Net (Efficient Channel Attention) ✅
 - SE-Net (Squeeze-and-Excitation Networks) ✅
+- ResMLP (Residual Multi-Layer Perceptron) ✅
+- ConvFormer (Convolutional Transformer) ✅
+- BoTNet (Bottleneck Transformer) ✅
+- CvT (Convolutional Vision Transformer) ✅
+- CMT (Convolutional Multi-Head Transformer) ✅
 
 Each module provides:
 1. load_[model]_model(model_path, num_classes=4, input_size, device='cuda')
@@ -67,10 +72,15 @@ from . import coatnet
 from . import nfnet
 from . import ecanet
 from . import senet
+from . import resmlp
+from . import convformer
+from . import botnet
+from . import cvt
+from . import cmt
 
-__version__ = "3.2.0"
+__version__ = "3.3.0"
 __author__ = "Dog Emotion Recognition Team"
-__description__ = "Comprehensive deep learning package for dog emotion classification with 22 algorithm families"
+__description__ = "Comprehensive deep learning package for dog emotion classification with 27 algorithm families"
 
 # Emotion classes in correct order
 EMOTION_CLASSES = ['angry', 'happy', 'relaxed', 'sad']
@@ -99,5 +109,10 @@ __all__ = [
     "nfnet",
     "ecanet",
     "senet",
+    "resmlp",
+    "convformer",
+    "botnet",
+    "cvt",
+    "cmt",
     "EMOTION_CLASSES"
 ] 
