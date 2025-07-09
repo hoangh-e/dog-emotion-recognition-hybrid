@@ -313,6 +313,36 @@ def predict_emotion_efficientnet_b0(image_path, model, transform, head_bbox=None
     return predict_emotion_efficientnet(image_path, model, transform, head_bbox, device)
 
 
+def predict_emotion_efficientnet_b1(image_path, model, transform, head_bbox=None, device='cuda'):
+    """Predict emotion using EfficientNet B1."""
+    return predict_emotion_efficientnet(image_path, model, transform, head_bbox, device)
+
+
+def predict_emotion_efficientnet_b2(image_path, model, transform, head_bbox=None, device='cuda'):
+    """Predict emotion using EfficientNet B2."""
+    return predict_emotion_efficientnet(image_path, model, transform, head_bbox, device)
+
+
+def predict_emotion_efficientnet_b3(image_path, model, transform, head_bbox=None, device='cuda'):
+    """Predict emotion using EfficientNet B3."""
+    return predict_emotion_efficientnet(image_path, model, transform, head_bbox, device)
+
+
+def predict_emotion_efficientnet_b4(image_path, model, transform, head_bbox=None, device='cuda'):
+    """Predict emotion using EfficientNet B4."""
+    return predict_emotion_efficientnet(image_path, model, transform, head_bbox, device)
+
+
+def predict_emotion_efficientnet_b5(image_path, model, transform, head_bbox=None, device='cuda'):
+    """Predict emotion using EfficientNet B5."""
+    return predict_emotion_efficientnet(image_path, model, transform, head_bbox, device)
+
+
+def predict_emotion_efficientnet_b6(image_path, model, transform, head_bbox=None, device='cuda'):
+    """Predict emotion using EfficientNet B6."""
+    return predict_emotion_efficientnet(image_path, model, transform, head_bbox, device)
+
+
 def predict_emotion_efficientnet_b7(image_path, model, transform, head_bbox=None, device='cuda'):
     """Predict emotion using EfficientNet B7."""
     return predict_emotion_efficientnet(image_path, model, transform, head_bbox, device) 
