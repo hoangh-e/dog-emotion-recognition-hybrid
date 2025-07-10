@@ -177,10 +177,7 @@ def predict_emotion_densenet(image_path, model, transform, head_bbox=None, devic
         
     except Exception as e:
         print(f"❌ Error in DenseNet emotion prediction: {e}")
-        # Return default scores on error
-        emotion_scores = {emotion: 0.0 for emotion in emotion_classes}
-        emotion_scores['predicted'] = False
-        return emotion_scores
+        raise RuntimeError(f"DenseNet prediction failed: {e}")
 
 
 def get_densenet_transforms(input_size=224, is_training=True):

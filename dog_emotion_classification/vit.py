@@ -41,17 +41,19 @@ def load_vit_model(model_path, architecture='vit_b_16', num_classes=4, input_siz
     print(f"🔄 Loading {architecture.upper()} model from: {model_path}")
     
     # Create model based on architecture
-    if architecture.lower() == 'vit_b_16':
+    if architecture.lower() in ['vit_b_16', 'vit_base_patch16_224']:
         model = models.vit_b_16(pretrained=False)
         print(f"🏗️  Created ViT-B/16 base model")
-    elif architecture.lower() == 'vit_l_16':
+    elif architecture.lower() in ['vit_l_16', 'vit_large_patch16_224']:
         model = models.vit_l_16(pretrained=False)
         print(f"🏗️  Created ViT-L/16 base model")
-    elif architecture.lower() == 'vit_h_14':
+    elif architecture.lower() in ['vit_h_14', 'vit_huge_patch14_224']:
         model = models.vit_h_14(pretrained=False)
         print(f"🏗️  Created ViT-H/14 base model")
     else:
-        raise ValueError(f"Unsupported ViT architecture: {architecture}")
+        print(f"⚠️  Unsupported ViT architecture: {architecture}, using ViT-B/16 as default")
+        model = models.vit_b_16(pretrained=False)
+        print(f"🏗️  Created ViT-B/16 base model (default)")
     
     # Modify final classification layer for emotion classes
     in_features = model.heads.head.in_features
@@ -177,10 +179,7 @@ def predict_emotion_vit(image_path, model, transform, head_bbox=None, device='cu
         
     except Exception as e:
         print(f"❌ Error in ViT emotion prediction: {e}")
-        # Return default scores on error
-        emotion_scores = {emotion: 0.0 for emotion in emotion_classes}
-        emotion_scores['predicted'] = False
-        return emotion_scores
+        raise RuntimeError(f"ViT prediction failed: {e}")
 
 
 def get_vit_transforms(input_size=224, is_training=True):

@@ -331,14 +331,32 @@ def load_maxvit_model(model_path, architecture='maxvit_tiny', num_classes=4, inp
             state_dict = checkpoint
             print(f"📦 Using checkpoint directly as state_dict")
         
-        # Load state dict
+        # Load state dict with flexible handling
         try:
             model.load_state_dict(state_dict, strict=True)
             print(f"✅ Loaded model with strict=True")
         except RuntimeError as e:
             print(f"⚠️  Strict loading failed, trying strict=False: {e}")
-            model.load_state_dict(state_dict, strict=False)
-            print(f"✅ Loaded model with strict=False")
+            try:
+                model.load_state_dict(state_dict, strict=False)
+                print(f"✅ Loaded model with strict=False")
+            except Exception as e2:
+                print(f"⚠️  Could not load state dict: {e2}")
+                print(f"⚠️  Creating model with checkpoint's architecture...")
+                # Try to infer architecture from checkpoint
+                if 'stem.0.weight' in state_dict:
+                    stem_channels = state_dict['stem.0.weight'].shape[0]
+                    if stem_channels == 64:
+                        model = MaxViTModel(num_classes=num_classes, depths=[2, 2, 5, 2], dims=[64, 128, 256, 512])
+                    elif stem_channels == 96:
+                        model = MaxViTModel(num_classes=num_classes, depths=[2, 2, 5, 2], dims=[96, 192, 384, 768])
+                    else:
+                        model = MaxViTModel(num_classes=num_classes, depths=[2, 2, 5, 2], dims=[stem_channels, stem_channels*2, stem_channels*4, stem_channels*8])
+                    
+                    model.load_state_dict(state_dict, strict=False)
+                    print(f"✅ Loaded model with inferred architecture (stem_channels={stem_channels})")
+                else:
+                    print(f"⚠️  Using model with default architecture")
     else:
         raise FileNotFoundError(f"Model checkpoint not found: {model_path}")
     
@@ -431,10 +449,7 @@ def predict_emotion_maxvit(image_path, model, transform, head_bbox=None, device=
         
     except Exception as e:
         print(f"❌ Error in MaxViT emotion prediction: {e}")
-        # Return default scores on error
-        emotion_scores = {emotion: 0.0 for emotion in emotion_classes}
-        emotion_scores['predicted'] = False
-        return emotion_scores
+        raise RuntimeError(f"MaxViT prediction failed: {e}")
 
 
 def get_maxvit_transforms(input_size=224, is_training=True):

@@ -64,6 +64,12 @@ def load_inception_model(model_path, architecture='inception_v3', num_classes=4,
         model.classifier = nn.Linear(in_features, num_classes)
         print(f"🔧 Modified classifier layer: Linear(in_features={in_features}, out_features={num_classes})")
     
+    # Fix AuxLogits layer for Inception v3
+    if hasattr(model, 'AuxLogits') and hasattr(model.AuxLogits, 'fc'):
+        aux_in_features = model.AuxLogits.fc.in_features
+        model.AuxLogits.fc = nn.Linear(aux_in_features, num_classes)
+        print(f"🔧 Modified AuxLogits.fc layer: Linear(in_features={aux_in_features}, out_features={num_classes})")
+    
     # Load checkpoint
     if os.path.exists(model_path):
         checkpoint = torch.load(model_path, map_location=device)
@@ -186,10 +192,7 @@ def predict_emotion_inception(image_path, model, transform, head_bbox=None, devi
         
     except Exception as e:
         print(f"❌ Error in Inception emotion prediction: {e}")
-        # Return default scores on error
-        emotion_scores = {emotion: 0.0 for emotion in emotion_classes}
-        emotion_scores['predicted'] = False
-        return emotion_scores
+        raise RuntimeError(f"Inception prediction failed: {e}")
 
 
 def get_inception_transforms(input_size=299, is_training=True):

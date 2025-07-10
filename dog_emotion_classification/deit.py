@@ -76,15 +76,15 @@ class DeiTModel(nn.Module):
             return logits
 
 
-def load_deit_model(checkpoint_path=None, model_variant='small', num_classes=4, 
-                   device='cuda' if torch.cuda.is_available() else 'cpu'):
+def load_deit_model(model_path=None, architecture='deit_small', num_classes=4, input_size=224, device='cuda'):
     """
     Load DeiT model for dog emotion classification.
     
     Args:
-        checkpoint_path: Path to model checkpoint
-        model_variant: DeiT variant ('tiny', 'small', 'base')
+        model_path: Path to model checkpoint
+        architecture: DeiT variant ('deit_tiny', 'deit_small', 'deit_base')
         num_classes: Number of emotion classes (default: 4)
+        input_size: Input image size (default: 224)
         device: Device to load model on
     
     Returns:
@@ -92,179 +92,124 @@ def load_deit_model(checkpoint_path=None, model_variant='small', num_classes=4,
     """
     # Model name mapping
     model_names = {
-        'tiny': 'deit_tiny_patch16_224',
-        'small': 'deit_small_patch16_224', 
-        'base': 'deit_base_patch16_224'
+        'deit_tiny': 'deit_tiny_patch16_224',
+        'deit_small': 'deit_small_patch16_224', 
+        'deit_base': 'deit_base_patch16_224'
     }
     
-    model_name = model_names.get(model_variant, 'deit_small_patch16_224')
+    model_name = model_names.get(architecture, 'deit_small_patch16_224')
     
-    try:
-        # Create model
-        model = DeiTModel(
-            model_name=model_name,
-            num_classes=num_classes,
-            pretrained=checkpoint_path is None,
-            distillation=True
-        )
-        
-        # Load checkpoint if provided
-        if checkpoint_path and os.path.exists(checkpoint_path):
-            try:
-                checkpoint = torch.load(checkpoint_path, map_location=device)
-                
-                # Handle different checkpoint formats
-                if 'model_state_dict' in checkpoint:
-                    state_dict = checkpoint['model_state_dict']
-                elif 'state_dict' in checkpoint:
-                    state_dict = checkpoint['state_dict']
-                else:
-                    state_dict = checkpoint
-                
-                # Load state dict with strict=False to handle missing keys
-                model.load_state_dict(state_dict, strict=False)
-                print(f"Loaded DeiT checkpoint from {checkpoint_path}")
-                
-            except Exception as e:
-                print(f"Warning: Could not load checkpoint {checkpoint_path}: {e}")
-                print("Using pretrained ImageNet weights instead")
-        
-        model = model.to(device)
-        model.eval()
-        
-        return model
-        
-    except Exception as e:
-        print(f"Error loading DeiT model: {e}")
-        # Fallback to simple model
-        return create_simple_deit_model(num_classes, device)
-
-
-def create_simple_deit_model(num_classes=4, device='cuda'):
-    """Create a simple DeiT-like model if timm is not available."""
+    if not TIMM_AVAILABLE:
+        raise ImportError("timm is required for DeiT. Install with: pip install timm>=0.6.0")
     
-    class SimpleDeiT(nn.Module):
-        def __init__(self, num_classes=4):
-            super().__init__()
-            self.patch_embed = nn.Conv2d(3, 384, kernel_size=16, stride=16)
-            self.pos_embed = nn.Parameter(torch.randn(1, 198, 384))
-            self.cls_token = nn.Parameter(torch.randn(1, 1, 384))
-            self.dist_token = nn.Parameter(torch.randn(1, 1, 384))
-            
-            # Transformer blocks
-            self.transformer = nn.TransformerEncoder(
-                nn.TransformerEncoderLayer(
-                    d_model=384, nhead=6, dim_feedforward=1536,
-                    dropout=0.1, activation='gelu'
-                ),
-                num_layers=12
-            )
-            
-            self.norm = nn.LayerNorm(384)
-            self.classifier = nn.Linear(384, num_classes)
-            self.distillation_head = nn.Linear(384, num_classes)
-            
-        def forward(self, x):
-            B = x.shape[0]
-            
-            # Patch embedding
-            x = self.patch_embed(x)  # (B, 384, 14, 14)
-            x = x.flatten(2).transpose(1, 2)  # (B, 196, 384)
-            
-            # Add cls and dist tokens
-            cls_tokens = self.cls_token.expand(B, -1, -1)
-            dist_tokens = self.dist_token.expand(B, -1, -1)
-            x = torch.cat([cls_tokens, dist_tokens, x], dim=1)
-            
-            # Add positional embedding
-            x = x + self.pos_embed
-            
-            # Transformer
-            x = self.transformer(x)
-            x = self.norm(x)
-            
-            # Classification
-            cls_logits = self.classifier(x[:, 0])
-            dist_logits = self.distillation_head(x[:, 1])
-            
-            return cls_logits, dist_logits
+    # Create model
+    model = DeiTModel(
+        model_name=model_name,
+        num_classes=num_classes,
+        pretrained=model_path is None,
+        distillation=True
+    )
     
-    model = SimpleDeiT(num_classes).to(device)
+    # Load checkpoint if provided
+    if model_path and os.path.exists(model_path):
+        try:
+            checkpoint = torch.load(model_path, map_location=device)
+            
+            # Handle different checkpoint formats
+            if 'model_state_dict' in checkpoint:
+                state_dict = checkpoint['model_state_dict']
+            elif 'state_dict' in checkpoint:
+                state_dict = checkpoint['state_dict']
+            else:
+                state_dict = checkpoint
+            
+            # Load state dict with strict=False to handle missing keys
+            model.load_state_dict(state_dict, strict=False)
+            print(f"Loaded DeiT checkpoint from {model_path}")
+            
+        except Exception as e:
+            raise RuntimeError(f"Could not load checkpoint {model_path}: {e}")
+    elif model_path and not os.path.exists(model_path):
+        raise FileNotFoundError(f"Model checkpoint not found: {model_path}")
+    
+    model = model.to(device)
+    model.eval()
+    
     return model
 
 
-def predict_emotion_deit(model, image_path, transforms_fn=None, device='cuda'):
+def predict_emotion_deit(image_path, model, transform=None, head_bbox=None, device='cuda',
+                         emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
     """
     Predict dog emotion using DeiT model.
     
     Args:
-        model: Loaded DeiT model
         image_path: Path to image or PIL Image
-        transforms_fn: Image preprocessing transforms
+        model: Loaded DeiT model
+        transform: Image preprocessing transforms
+        head_bbox: Optional head bounding box for cropping
         device: Device to run inference on
+        emotion_classes: List of emotion class names
     
     Returns:
         Dictionary with emotion predictions
     """
-    emotion_classes = ['angry', 'happy', 'relaxed', 'sad']
     
-    try:
-        # Load and preprocess image
-        if isinstance(image_path, str):
-            image = Image.open(image_path).convert('RGB')
+    # Load and preprocess image
+    if isinstance(image_path, str):
+        image = Image.open(image_path).convert('RGB')
+    else:
+        image = image_path.convert('RGB')
+    
+    # Crop head region if bbox provided
+    if head_bbox is not None:
+        x1, y1, x2, y2 = head_bbox
+        # Ensure coordinates are within image bounds
+        width, height = image.size
+        x1 = max(0, min(int(x1), width))
+        y1 = max(0, min(int(y1), height))
+        x2 = max(x1, min(int(x2), width))
+        y2 = max(y1, min(int(y2), height))
+        
+        # Crop the head region
+        image = image.crop((x1, y1, x2, y2))
+    
+    if transform is None:
+        transform = get_deit_transforms()
+    
+    # Apply transforms
+    input_tensor = transform(image).unsqueeze(0).to(device)
+    
+    # Inference
+    model.eval()
+    with torch.no_grad():
+        outputs = model(input_tensor)
+        
+        # Handle distillation output
+        if isinstance(outputs, tuple):
+            cls_logits, dist_logits = outputs
+            # Average predictions from both heads
+            logits = (cls_logits + dist_logits) / 2
         else:
-            image = image_path
+            logits = outputs
         
-        if transforms_fn is None:
-            transforms_fn = get_deit_transforms()
+        # Get probabilities
+        probabilities = torch.softmax(logits, dim=1)
+        probs = probabilities.cpu().numpy()[0]
         
-        # Apply transforms
-        input_tensor = transforms_fn(image).unsqueeze(0).to(device)
+        # Get predicted class
+        predicted_idx = np.argmax(probs)
+        predicted_emotion = emotion_classes[predicted_idx]
+        confidence = float(probs[predicted_idx])
         
-        # Inference
-        model.eval()
-        with torch.no_grad():
-            outputs = model(input_tensor)
-            
-            # Handle distillation output
-            if isinstance(outputs, tuple):
-                cls_logits, dist_logits = outputs
-                # Average predictions from both heads
-                logits = (cls_logits + dist_logits) / 2
-            else:
-                logits = outputs
-            
-            # Get probabilities
-            probabilities = torch.softmax(logits, dim=1)
-            probs = probabilities.cpu().numpy()[0]
-            
-            # Get predicted class
-            predicted_idx = np.argmax(probs)
-            predicted_emotion = emotion_classes[predicted_idx]
-            confidence = float(probs[predicted_idx])
-            
-            # Create result dictionary
-            result = {
-                'predicted_emotion': predicted_emotion,
-                'confidence': confidence,
-                'predicted_flag': confidence > 0.5,
-                'probabilities': {
-                    emotion_classes[i]: float(probs[i]) 
-                    for i in range(len(emotion_classes))
-                }
-            }
-            
-            return result
-            
-    except Exception as e:
-        print(f"Error in DeiT prediction: {e}")
-        # Return fallback result
-        return {
-            'predicted_emotion': 'happy',
-            'confidence': 0.25,
-            'predicted_flag': False,
-            'probabilities': {emotion: 0.25 for emotion in emotion_classes}
-        }
+        # Create result dictionary
+        emotion_scores = {}
+        for i, emotion in enumerate(emotion_classes):
+            emotion_scores[emotion] = float(probs[i])
+        
+        emotion_scores['predicted'] = True
+        
+        return emotion_scores
 
 
 def get_deit_transforms(input_size=224, is_training=False):
@@ -411,45 +356,34 @@ def predict_emotion_deit_standard(image_path, model, transform, head_bbox=None, 
     dict
         Emotion predictions with scores and predicted flag
     """
-    try:
-        # Load and preprocess image
-        if isinstance(image_path, str):
-            image = Image.open(image_path).convert('RGB')
-        else:
-            image = image_path.convert('RGB')
-        
-        # Crop head region if bbox provided
-        if head_bbox is not None:
-            x1, y1, x2, y2 = head_bbox
-            width, height = image.size
-            x1 = max(0, min(int(x1), width))
-            y1 = max(0, min(int(y1), height))
-            x2 = max(x1, min(int(x2), width))
-            y2 = max(y1, min(int(y2), height))
-            image = image.crop((x1, y1, x2, y2))
-        
-        # Use existing prediction function
-        result = predict_emotion_deit(model, image, transform, device)
-        
-        # Convert to standardized format
+    # Load and preprocess image
+    if isinstance(image_path, str):
+        image = Image.open(image_path).convert('RGB')
+    else:
+        image = image_path.convert('RGB')
+    
+    # Crop head region if bbox provided
+    if head_bbox is not None:
+        x1, y1, x2, y2 = head_bbox
+        width, height = image.size
+        x1 = max(0, min(int(x1), width))
+        y1 = max(0, min(int(y1), height))
+        x2 = max(x1, min(int(x2), width))
+        y2 = max(y1, min(int(y2), height))
+        image = image.crop((x1, y1, x2, y2))
+    
+    # Use existing prediction function
+    result = predict_emotion_deit(image, model, transform, device=device)
+    
+    # Convert to standardized format if needed
+    if 'probabilities' in result:
         emotion_scores = {}
-        if 'probabilities' in result:
-            for emotion in emotion_classes:
-                emotion_scores[emotion] = result['probabilities'].get(emotion, 0.0)
-        else:
-            # Fallback if probabilities not available
-            for emotion in emotion_classes:
-                emotion_scores[emotion] = 0.25
-        
+        for emotion in emotion_classes:
+            emotion_scores[emotion] = result['probabilities'].get(emotion, 0.0)
         emotion_scores['predicted'] = result.get('predicted_flag', False)
-        
         return emotion_scores
-        
-    except Exception as e:
-        print(f"❌ Error in DeiT emotion prediction: {e}")
-        emotion_scores = {emotion: 0.0 for emotion in emotion_classes}
-        emotion_scores['predicted'] = False
-        return emotion_scores
+    else:
+        return result
 
 
 # Alias functions for consistency with other modules
@@ -482,14 +416,9 @@ if __name__ == "__main__":
         model = load_deit_model(model_variant='small', device=device)
         print("✅ DeiT model loaded successfully")
         
-        # Test with dummy input
-        dummy_input = torch.randn(1, 3, 224, 224).to(device)
-        with torch.no_grad():
-            output = model(dummy_input)
-            if isinstance(output, tuple):
-                print(f"✅ Model output shape: {output[0].shape}, {output[1].shape}")
-            else:
-                print(f"✅ Model output shape: {output.shape}")
+        # Test transforms
+        transforms_fn = get_deit_transforms()
+        print("✅ Transforms created successfully")
                 
     except Exception as e:
         print(f"❌ Error testing DeiT: {e}") 

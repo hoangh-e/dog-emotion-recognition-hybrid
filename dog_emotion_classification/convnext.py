@@ -180,10 +180,7 @@ def predict_emotion_convnext(image_path, model, transform, head_bbox=None, devic
         
     except Exception as e:
         print(f"❌ Error in ConvNeXt emotion prediction: {e}")
-        # Return default scores on error
-        emotion_scores = {emotion: 0.0 for emotion in emotion_classes}
-        emotion_scores['predicted'] = False
-        return emotion_scores
+        raise RuntimeError(f"ConvNeXt prediction failed: {e}")
 
 
 def get_convnext_transforms(input_size=224, is_training=True):

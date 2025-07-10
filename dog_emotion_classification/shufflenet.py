@@ -176,10 +176,7 @@ def predict_emotion_shufflenet(image_path, model, transform, head_bbox=None, dev
         
     except Exception as e:
         print(f"❌ Error in ShuffleNet emotion prediction: {e}")
-        # Return default scores on error
-        emotion_scores = {emotion: 0.0 for emotion in emotion_classes}
-        emotion_scores['predicted'] = False
-        return emotion_scores
+        raise RuntimeError(f"ShuffleNet prediction failed: {e}")
 
 
 def get_shufflenet_transforms(input_size=224, is_training=True):

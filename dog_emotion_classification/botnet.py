@@ -276,13 +276,7 @@ def predict_emotion_botnet(image_path: str, model: nn.Module, transform: transfo
         
     except Exception as e:
         print(f"❌ Error in BoTNet emotion prediction: {e}")
-        return {
-            'predicted_emotion': 'unknown',
-            'confidence': 0.0,
-            'class_probabilities': {emotion: 0.0 for emotion in emotion_classes},
-            'model_type': 'BoTNet',
-            'error': str(e)
-        }
+        raise RuntimeError(f"BoTNet prediction failed: {e}")
 
 def get_botnet_transforms(input_size: int = 224, is_training: bool = True) -> transforms.Compose:
     """

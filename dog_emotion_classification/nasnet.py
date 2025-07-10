@@ -136,84 +136,78 @@ class NASNetModel(nn.Module):
         return x
 
 
-def load_nasnet_model(checkpoint_path=None, model_variant='mobile', num_classes=4,
-                     device='cuda' if torch.cuda.is_available() else 'cpu'):
+def load_nasnet_model(model_path=None, architecture='nasnet_mobile', num_classes=4, input_size=224, device='cuda'):
     """
     Load NASNet model for dog emotion classification.
     
     Args:
-        checkpoint_path: Path to model checkpoint
-        model_variant: NASNet variant ('mobile', 'large')
+        model_path: Path to model checkpoint
+        architecture: NASNet variant ('nasnet_mobile', 'nasnet_large')
         num_classes: Number of emotion classes (default: 4)
+        input_size: Input image size (default: 224)
         device: Device to load model on
     
     Returns:
         Loaded NASNet model
     """
-    try:
-        # Try to use timm if available
-        if TIMM_AVAILABLE and checkpoint_path is None:
-            model_names = {
-                'mobile': 'nasnetalarge',
-                'large': 'nasnetalarge'
-            }
+    
+    # Try to use timm if available
+    if TIMM_AVAILABLE and model_path is None:
+        model_names = {
+            'nasnet_mobile': 'nasnetalarge',
+            'nasnet_large': 'nasnetalarge'
+        }
+        
+        model_name = model_names.get(architecture, 'nasnetalarge')
+        
+        try:
+            model = timm.create_model(model_name, pretrained=True, num_classes=num_classes)
+            model = model.to(device)
+            model.eval()
+            print(f"✅ Loaded {model_name} from timm")
+            return model
+        except Exception as e:
+            print(f"Failed to load from timm: {e}")
+            # Create custom implementation
+            model = create_custom_nasnet(architecture, num_classes)
+    else:
+        # Use custom implementation
+        model = create_custom_nasnet(architecture, num_classes)
+    
+    # Load checkpoint if provided
+    if model_path and os.path.exists(model_path):
+        try:
+            checkpoint = torch.load(model_path, map_location=device)
             
-            model_name = model_names.get(model_variant, 'nasnetalarge')
+            # Handle different checkpoint formats
+            if 'model_state_dict' in checkpoint:
+                state_dict = checkpoint['model_state_dict']
+            elif 'state_dict' in checkpoint:
+                state_dict = checkpoint['state_dict']
+            else:
+                state_dict = checkpoint
             
-            try:
-                # Create timm model
-                model = timm.create_model(
-                    model_name,
-                    pretrained=True,
-                    num_classes=num_classes
-                )
-                
-                print(f"Loaded {model_name} from timm")
-                
-            except Exception as e:
-                print(f"Failed to load from timm: {e}")
-                # Fallback to custom implementation
-                model = create_custom_nasnet(model_variant, num_classes)
-        else:
-            # Use custom implementation
-            model = create_custom_nasnet(model_variant, num_classes)
-        
-        # Load checkpoint if provided
-        if checkpoint_path and os.path.exists(checkpoint_path):
-            try:
-                checkpoint = torch.load(checkpoint_path, map_location=device)
-                
-                # Handle different checkpoint formats
-                if 'model_state_dict' in checkpoint:
-                    state_dict = checkpoint['model_state_dict']
-                elif 'state_dict' in checkpoint:
-                    state_dict = checkpoint['state_dict']
-                else:
-                    state_dict = checkpoint
-                
-                model.load_state_dict(state_dict, strict=False)
-                print(f"Loaded NASNet checkpoint from {checkpoint_path}")
-                
-            except Exception as e:
-                print(f"Warning: Could not load checkpoint {checkpoint_path}: {e}")
-        
-        model = model.to(device)
-        model.eval()
-        
-        return model
-        
-    except Exception as e:
-        print(f"Error loading NASNet model: {e}")
-        # Return simple fallback model
-        return create_simple_nasnet(num_classes, device)
+            model.load_state_dict(state_dict, strict=False)
+            print(f"Loaded NASNet checkpoint from {model_path}")
+            
+        except Exception as e:
+            raise RuntimeError(f"Could not load checkpoint {model_path}: {e}")
+    elif model_path and not os.path.exists(model_path):
+        raise FileNotFoundError(f"Model checkpoint not found: {model_path}")
+    
+    model = model.to(device)
+    model.eval()
+    
+    return model
 
 
 def create_custom_nasnet(variant='mobile', num_classes=4):
     """Create custom NASNet model."""
     
-    if variant == 'mobile':
+    # Handle both old and new architecture naming
+    if variant in ['mobile', 'nasnet_mobile']:
         return NASNetModel(num_classes=num_classes, num_cells=6, channels=32)
-    elif variant == 'large':
+    elif variant in ['large', 'nasnet_large']:
         return NASNetModel(num_classes=num_classes, num_cells=12, channels=64)
     else:
         return NASNetModel(num_classes=num_classes, num_cells=6, channels=32)
@@ -273,70 +267,68 @@ def create_simple_nasnet(num_classes=4, device='cuda'):
     return model
 
 
-def predict_emotion_nasnet(model, image_path, transforms_fn=None, device='cuda'):
+def predict_emotion_nasnet(image_path, model, transform=None, head_bbox=None, device='cuda',
+                          emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
     """
     Predict dog emotion using NASNet model.
     
     Args:
-        model: Loaded NASNet model
         image_path: Path to image or PIL Image
-        transforms_fn: Image preprocessing transforms
+        model: Loaded NASNet model
+        transform: Image preprocessing transforms
+        head_bbox: Optional head bounding box for cropping
         device: Device to run inference on
+        emotion_classes: List of emotion class names
     
     Returns:
         Dictionary with emotion predictions
     """
-    emotion_classes = ['angry', 'happy', 'relaxed', 'sad']
     
-    try:
-        # Load and preprocess image
-        if isinstance(image_path, str):
-            image = Image.open(image_path).convert('RGB')
-        else:
-            image = image_path
+    # Load and preprocess image
+    if isinstance(image_path, str):
+        image = Image.open(image_path).convert('RGB')
+    else:
+        image = image_path.convert('RGB')
+    
+    # Crop head region if bbox provided
+    if head_bbox is not None:
+        x1, y1, x2, y2 = head_bbox
+        # Ensure coordinates are within image bounds
+        width, height = image.size
+        x1 = max(0, min(int(x1), width))
+        y1 = max(0, min(int(y1), height))
+        x2 = max(x1, min(int(x2), width))
+        y2 = max(y1, min(int(y2), height))
         
-        if transforms_fn is None:
-            transforms_fn = get_nasnet_transforms()
+        # Crop the head region
+        image = image.crop((x1, y1, x2, y2))
+    
+    if transform is None:
+        transform = get_nasnet_transforms()
+    
+    # Apply transforms
+    input_tensor = transform(image).unsqueeze(0).to(device)
+    
+    # Inference
+    model.eval()
+    with torch.no_grad():
+        outputs = model(input_tensor)
+        probabilities = torch.nn.functional.softmax(outputs, dim=1)
+        probs = probabilities.cpu().numpy()[0]
         
-        # Apply transforms
-        input_tensor = transforms_fn(image).unsqueeze(0).to(device)
+        # Get predicted class
+        predicted_idx = np.argmax(probs)
+        predicted_emotion = emotion_classes[predicted_idx]
+        confidence = float(probs[predicted_idx])
         
-        # Inference
-        model.eval()
-        with torch.no_grad():
-            outputs = model(input_tensor)
-            
-            # Get probabilities
-            probabilities = torch.softmax(outputs, dim=1)
-            probs = probabilities.cpu().numpy()[0]
-            
-            # Get predicted class
-            predicted_idx = np.argmax(probs)
-            predicted_emotion = emotion_classes[predicted_idx]
-            confidence = float(probs[predicted_idx])
-            
-            # Create result dictionary
-            result = {
-                'predicted_emotion': predicted_emotion,
-                'confidence': confidence,
-                'predicted_flag': confidence > 0.5,
-                'probabilities': {
-                    emotion_classes[i]: float(probs[i]) 
-                    for i in range(len(emotion_classes))
-                }
-            }
-            
-            return result
-            
-    except Exception as e:
-        print(f"Error in NASNet prediction: {e}")
-        # Return fallback result
-        return {
-            'predicted_emotion': 'happy',
-            'confidence': 0.25,
-            'predicted_flag': False,
-            'probabilities': {emotion: 0.25 for emotion in emotion_classes}
-        }
+        # Create result dictionary
+        emotion_scores = {}
+        for i, emotion in enumerate(emotion_classes):
+            emotion_scores[emotion] = float(probs[i])
+        
+        emotion_scores['predicted'] = True
+        
+        return emotion_scores
 
 
 def get_nasnet_transforms(input_size=224, is_training=False):
@@ -447,45 +439,8 @@ def predict_emotion_nasnet_standard(image_path, model, transform, head_bbox=None
     dict
         Emotion predictions with scores and predicted flag
     """
-    try:
-        # Load and preprocess image
-        if isinstance(image_path, str):
-            image = Image.open(image_path).convert('RGB')
-        else:
-            image = image_path.convert('RGB')
-        
-        # Crop head region if bbox provided
-        if head_bbox is not None:
-            x1, y1, x2, y2 = head_bbox
-            width, height = image.size
-            x1 = max(0, min(int(x1), width))
-            y1 = max(0, min(int(y1), height))
-            x2 = max(x1, min(int(x2), width))
-            y2 = max(y1, min(int(y2), height))
-            image = image.crop((x1, y1, x2, y2))
-        
-        # Use existing prediction function
-        result = predict_emotion_nasnet(model, image, transform, device)
-        
-        # Convert to standardized format
-        emotion_scores = {}
-        if 'probabilities' in result:
-            for emotion in emotion_classes:
-                emotion_scores[emotion] = result['probabilities'].get(emotion, 0.0)
-        else:
-            # Fallback if probabilities not available
-            for emotion in emotion_classes:
-                emotion_scores[emotion] = 0.25
-        
-        emotion_scores['predicted'] = result.get('predicted_flag', False)
-        
-        return emotion_scores
-        
-    except Exception as e:
-        print(f"❌ Error in NASNet emotion prediction: {e}")
-        emotion_scores = {emotion: 0.0 for emotion in emotion_classes}
-        emotion_scores['predicted'] = False
-        return emotion_scores
+    # Use existing prediction function directly
+    return predict_emotion_nasnet(image_path, model, transform, head_bbox, device, emotion_classes)
 
 
 if __name__ == "__main__":
@@ -500,11 +455,9 @@ if __name__ == "__main__":
         model = load_nasnet_model(model_variant='mobile', device=device)
         print("✅ NASNet model loaded successfully")
         
-        # Test with dummy input
-        dummy_input = torch.randn(1, 3, 224, 224).to(device)
-        with torch.no_grad():
-            output = model(dummy_input)
-            print(f"✅ Model output shape: {output.shape}")
+        # Test transforms
+        transforms_fn = get_nasnet_transforms()
+        print("✅ Transforms created successfully")
                 
     except Exception as e:
         print(f"❌ Error testing NASNet: {e}") 

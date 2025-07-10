@@ -141,71 +141,62 @@ def load_mlp_mixer_model(checkpoint_path=None, model_variant='base', num_classes
     
     Args:
         checkpoint_path: Path to model checkpoint
-        model_variant: MLP-Mixer variant ('tiny', 'small', 'base', 'large')
+        model_variant: Model variant ('tiny', 'small', 'base', 'large')
         num_classes: Number of emotion classes (default: 4)
         device: Device to load model on
     
     Returns:
         Loaded MLP-Mixer model
     """
-    try:
-        # Try to use timm if available
-        if TIMM_AVAILABLE and checkpoint_path is None:
-            model_names = {
-                'tiny': 'mixer_s32_224',
-                'small': 'mixer_s16_224',
-                'base': 'mixer_b16_224',
-                'large': 'mixer_l16_224'
-            }
+    
+    print(f"🔄 Loading MLP-Mixer {model_variant} model")
+    
+    # Try to use timm if available
+    if TIMM_AVAILABLE and checkpoint_path is None:
+        try:
+            # Create timm model
+            model_name = f'mixer_{model_variant}_patch16_224'
+            model = timm.create_model(
+                model_name,
+                pretrained=True,
+                num_classes=num_classes
+            )
             
-            model_name = model_names.get(model_variant, 'mixer_b16_224')
+            print(f"✅ Loaded {model_name} from timm")
             
-            try:
-                # Create timm model
-                model = timm.create_model(
-                    model_name,
-                    pretrained=True,
-                    num_classes=num_classes
-                )
-                
-                print(f"Loaded {model_name} from timm")
-                
-            except Exception as e:
-                print(f"Failed to load from timm: {e}")
-                # Fallback to custom implementation
-                model = create_custom_mlp_mixer(model_variant, num_classes)
-        else:
-            # Use custom implementation
+        except Exception as e:
+            print(f"Failed to load from timm: {e}")
+            # Create custom implementation
             model = create_custom_mlp_mixer(model_variant, num_classes)
-        
-        # Load checkpoint if provided
-        if checkpoint_path and os.path.exists(checkpoint_path):
-            try:
-                checkpoint = torch.load(checkpoint_path, map_location=device)
-                
-                # Handle different checkpoint formats
-                if 'model_state_dict' in checkpoint:
-                    state_dict = checkpoint['model_state_dict']
-                elif 'state_dict' in checkpoint:
-                    state_dict = checkpoint['state_dict']
-                else:
-                    state_dict = checkpoint
-                
-                model.load_state_dict(state_dict, strict=False)
-                print(f"Loaded MLP-Mixer checkpoint from {checkpoint_path}")
-                
-            except Exception as e:
-                print(f"Warning: Could not load checkpoint {checkpoint_path}: {e}")
-        
-        model = model.to(device)
-        model.eval()
-        
-        return model
-        
-    except Exception as e:
-        print(f"Error loading MLP-Mixer model: {e}")
-        # Return simple fallback model
-        return create_simple_mlp_mixer(num_classes, device)
+    else:
+        # Use custom implementation
+        model = create_custom_mlp_mixer(model_variant, num_classes)
+    
+    # Load checkpoint if provided
+    if checkpoint_path and os.path.exists(checkpoint_path):
+        try:
+            checkpoint = torch.load(checkpoint_path, map_location=device)
+            
+            # Handle different checkpoint formats
+            if 'model_state_dict' in checkpoint:
+                state_dict = checkpoint['model_state_dict']
+            elif 'state_dict' in checkpoint:
+                state_dict = checkpoint['state_dict']
+            else:
+                state_dict = checkpoint
+            
+            model.load_state_dict(state_dict, strict=False)
+            print(f"Loaded MLP-Mixer checkpoint from {checkpoint_path}")
+            
+        except Exception as e:
+            raise RuntimeError(f"Could not load checkpoint {checkpoint_path}: {e}")
+    elif checkpoint_path and not os.path.exists(checkpoint_path):
+        raise FileNotFoundError(f"Model checkpoint not found: {checkpoint_path}")
+    
+    model = model.to(device)
+    model.eval()
+    
+    return model
 
 
 def create_custom_mlp_mixer(variant='base', num_classes=4):
@@ -343,62 +334,49 @@ def predict_emotion_mlp_mixer(model, image_path, transforms_fn=None, device='cud
         model: Loaded MLP-Mixer model
         image_path: Path to image or PIL Image
         transforms_fn: Image preprocessing transforms
-        device: Device to run inference on
+        device: Device for inference
     
     Returns:
         Dictionary with emotion predictions
     """
     emotion_classes = ['angry', 'happy', 'relaxed', 'sad']
     
-    try:
-        # Load and preprocess image
-        if isinstance(image_path, str):
-            image = Image.open(image_path).convert('RGB')
-        else:
-            image = image_path
+    # Load and preprocess image
+    if isinstance(image_path, str):
+        image = Image.open(image_path).convert('RGB')
+    else:
+        image = image_path
+    
+    if transforms_fn is None:
+        transforms_fn = get_mlp_mixer_transforms()
+    
+    # Apply transforms
+    input_tensor = transforms_fn(image).unsqueeze(0).to(device)
+    
+    # Inference
+    model.eval()
+    with torch.no_grad():
+        outputs = model(input_tensor)
+        probabilities = torch.nn.functional.softmax(outputs, dim=1)
+        probs = probabilities.cpu().numpy()[0]
         
-        if transforms_fn is None:
-            transforms_fn = get_mlp_mixer_transforms()
+        # Get predicted class
+        predicted_idx = np.argmax(probs)
+        predicted_emotion = emotion_classes[predicted_idx]
+        confidence = float(probs[predicted_idx])
         
-        # Apply transforms
-        input_tensor = transforms_fn(image).unsqueeze(0).to(device)
-        
-        # Inference
-        model.eval()
-        with torch.no_grad():
-            outputs = model(input_tensor)
-            
-            # Get probabilities
-            probabilities = torch.softmax(outputs, dim=1)
-            probs = probabilities.cpu().numpy()[0]
-            
-            # Get predicted class
-            predicted_idx = np.argmax(probs)
-            predicted_emotion = emotion_classes[predicted_idx]
-            confidence = float(probs[predicted_idx])
-            
-            # Create result dictionary
-            result = {
-                'predicted_emotion': predicted_emotion,
-                'confidence': confidence,
-                'predicted_flag': confidence > 0.5,
-                'probabilities': {
-                    emotion_classes[i]: float(probs[i]) 
-                    for i in range(len(emotion_classes))
-                }
+        # Create result dictionary
+        result = {
+            'predicted_emotion': predicted_emotion,
+            'confidence': confidence,
+            'predicted_flag': confidence > 0.5,
+            'probabilities': {
+                emotion_classes[i]: float(probs[i]) 
+                for i in range(len(emotion_classes))
             }
-            
-            return result
-            
-    except Exception as e:
-        print(f"Error in MLP-Mixer prediction: {e}")
-        # Return fallback result
-        return {
-            'predicted_emotion': 'happy',
-            'confidence': 0.25,
-            'predicted_flag': False,
-            'probabilities': {emotion: 0.25 for emotion in emotion_classes}
         }
+        
+        return result
 
 
 def get_mlp_mixer_transforms(input_size=224, is_training=False):
@@ -528,45 +506,35 @@ def predict_emotion_mlp_mixer_standard(image_path, model, transform, head_bbox=N
     dict
         Emotion predictions with scores and predicted flag
     """
-    try:
-        # Load and preprocess image
-        if isinstance(image_path, str):
-            image = Image.open(image_path).convert('RGB')
-        else:
-            image = image_path.convert('RGB')
-        
-        # Crop head region if bbox provided
-        if head_bbox is not None:
-            x1, y1, x2, y2 = head_bbox
-            width, height = image.size
-            x1 = max(0, min(int(x1), width))
-            y1 = max(0, min(int(y1), height))
-            x2 = max(x1, min(int(x2), width))
-            y2 = max(y1, min(int(y2), height))
-            image = image.crop((x1, y1, x2, y2))
-        
-        # Use existing prediction function
-        result = predict_emotion_mlp_mixer(model, image, transform, device)
-        
-        # Convert to standardized format
-        emotion_scores = {}
-        if 'probabilities' in result:
-            for emotion in emotion_classes:
-                emotion_scores[emotion] = result['probabilities'].get(emotion, 0.0)
-        else:
-            # Fallback if probabilities not available
-            for emotion in emotion_classes:
-                emotion_scores[emotion] = 0.25
-        
+    # Load and preprocess image
+    if isinstance(image_path, str):
+        image = Image.open(image_path).convert('RGB')
+    else:
+        image = image_path.convert('RGB')
+    
+    # Crop head region if bbox provided
+    if head_bbox is not None:
+        x1, y1, x2, y2 = head_bbox
+        width, height = image.size
+        x1 = max(0, min(int(x1), width))
+        y1 = max(0, min(int(y1), height))
+        x2 = max(x1, min(int(x2), width))
+        y2 = max(y1, min(int(y2), height))
+        image = image.crop((x1, y1, x2, y2))
+    
+    # Use existing prediction function
+    result = predict_emotion_mlp_mixer(model, image, transform, device)
+    
+    # Convert to standardized format
+    emotion_scores = {}
+    if 'probabilities' in result:
+        for emotion in emotion_classes:
+            emotion_scores[emotion] = result['probabilities'].get(emotion, 0.0)
         emotion_scores['predicted'] = result.get('predicted_flag', False)
-        
         return emotion_scores
-        
-    except Exception as e:
-        print(f"❌ Error in MLP-Mixer emotion prediction: {e}")
-        emotion_scores = {emotion: 0.0 for emotion in emotion_classes}
-        emotion_scores['predicted'] = False
-        return emotion_scores
+    else:
+        # Return result as is if already in correct format
+        return result
 
 
 if __name__ == "__main__":
@@ -581,12 +549,6 @@ if __name__ == "__main__":
         model = load_mlp_mixer_model(model_variant='base', device=device)
         print("✅ MLP-Mixer model loaded successfully")
         
-        # Test with dummy input
-        dummy_input = torch.randn(1, 3, 224, 224).to(device)
-        with torch.no_grad():
-            output = model(dummy_input)
-            print(f"✅ Model output shape: {output.shape}")
-            
         # Test transforms
         transforms_fn = get_mlp_mixer_transforms()
         print("✅ Transforms created successfully")

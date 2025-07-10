@@ -314,13 +314,7 @@ def predict_emotion_convformer(image_path: str, model: nn.Module, transform: tra
         
     except Exception as e:
         print(f"❌ Error in ConvFormer emotion prediction: {e}")
-        return {
-            'predicted_emotion': 'unknown',
-            'confidence': 0.0,
-            'class_probabilities': {emotion: 0.0 for emotion in emotion_classes},
-            'model_type': 'ConvFormer',
-            'error': str(e)
-        }
+        raise RuntimeError(f"ConvFormer prediction failed: {e}")
 
 def get_convformer_transforms(input_size: int = 224, is_training: bool = True) -> transforms.Compose:
     """

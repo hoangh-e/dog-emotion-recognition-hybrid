@@ -387,13 +387,7 @@ def predict_emotion_cmt(image_path: str, model: nn.Module, transform: transforms
         
     except Exception as e:
         print(f"❌ Error in CMT emotion prediction: {e}")
-        return {
-            'predicted_emotion': 'unknown',
-            'confidence': 0.0,
-            'class_probabilities': {emotion: 0.0 for emotion in emotion_classes},
-            'model_type': 'CMT',
-            'error': str(e)
-        }
+        raise RuntimeError(f"CMT prediction failed: {e}")
 
 def get_cmt_transforms(input_size: int = 224, is_training: bool = True) -> transforms.Compose:
     """

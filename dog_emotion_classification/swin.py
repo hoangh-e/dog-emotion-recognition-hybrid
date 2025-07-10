@@ -176,10 +176,7 @@ def predict_emotion_swin(image_path, model, transform, head_bbox=None, device='c
         
     except Exception as e:
         print(f"❌ Error in Swin Transformer emotion prediction: {e}")
-        # Return default scores on error
-        emotion_scores = {emotion: 0.0 for emotion in emotion_classes}
-        emotion_scores['predicted'] = False
-        return emotion_scores
+        raise RuntimeError(f"Swin prediction failed: {e}")
 
 
 def get_swin_transforms(input_size=224, is_training=True):

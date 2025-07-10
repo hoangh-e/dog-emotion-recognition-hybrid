@@ -57,9 +57,12 @@ def load_squeezenet_model(model_path, architecture='squeezenet1_0', num_classes=
     
     # Modify final classification layer for emotion classes
     # SqueezeNet uses a different structure - final conv layer instead of linear
-    model.classifier[1] = nn.Conv2d(512, num_classes, kernel_size=1)
+    # Get the input channels from the original layer
+    original_conv = model.classifier[1]
+    in_channels = original_conv.in_channels
+    model.classifier[1] = nn.Conv2d(in_channels, num_classes, kernel_size=1)
     model.num_classes = num_classes
-    print(f"🔧 Modified classifier layer: Conv2d(512, {num_classes}, kernel_size=1)")
+    print(f"🔧 Modified classifier layer: Conv2d({in_channels}, {num_classes}, kernel_size=1)")
     
     # Load checkpoint
     if os.path.exists(model_path):
@@ -180,10 +183,7 @@ def predict_emotion_squeezenet(image_path, model, transform, head_bbox=None, dev
         
     except Exception as e:
         print(f"❌ Error in SqueezeNet emotion prediction: {e}")
-        # Return default scores on error
-        emotion_scores = {emotion: 0.0 for emotion in emotion_classes}
-        emotion_scores['predicted'] = False
-        return emotion_scores
+        raise RuntimeError(f"SqueezeNet prediction failed: {e}")
 
 
 def get_squeezenet_transforms(input_size=224, is_training=True):
