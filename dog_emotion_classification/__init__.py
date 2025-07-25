@@ -2,12 +2,12 @@
 Dog Emotion Classification Package
 
 This package provides comprehensive deep learning models for dog emotion classification
-with 4 emotion classes in the correct order: ['angry', 'happy', 'relaxed', 'sad'].
+with 3 emotion classes in the correct order: ['angry', 'happy', 'relaxed'].
 
 ✅ All modules have been standardized with:
 - load_[model]_model() functions for loading trained models
 - predict_emotion_[model]() functions for emotion prediction
-- Correct emotion classes order: ['angry', 'happy', 'relaxed', 'sad']
+- Correct emotion classes order: ['angry', 'happy', 'relaxed']
 
 Supported architectures:
 - ResNet (ResNet50, ResNet101) ✅
@@ -38,17 +38,18 @@ Supported architectures:
 - CMT (Convolutional Multi-Head Transformer) ✅
 
 Each module provides:
-1. load_[model]_model(model_path, num_classes=4, input_size, device='cuda')
+1. load_[model]_model(model_path, num_classes=3, input_size, device='cuda')
 2. predict_emotion_[model](image_path, model, transform, head_bbox=None, device='cuda', 
-                           emotion_classes=['angry', 'happy', 'relaxed', 'sad'])
+                           emotion_classes=['angry', 'happy', 'relaxed'])
 3. get_[model]_transforms(input_size, is_training=False)
-4. create_[model]_model(num_classes=4, pretrained=True)
+4. create_[model]_model(num_classes=3, pretrained=True)
 
 IMPORTANT: All models are trained with emotion classes in the order:
-['angry', 'happy', 'relaxed', 'sad'] - Index 0=angry, 1=happy, 2=relaxed, 3=sad
+['angry', 'happy', 'relaxed'] - Index 0=angry, 1=happy, 2=relaxed
 """
 
 # Import all modules
+from . import utils
 from . import resnet
 from . import pure
 from . import pure34
@@ -82,10 +83,11 @@ __version__ = "3.3.0"
 __author__ = "Dog Emotion Recognition Team"
 __description__ = "Comprehensive deep learning package for dog emotion classification with 27 algorithm families"
 
-# Emotion classes in correct order
-EMOTION_CLASSES = ['angry', 'happy', 'relaxed', 'sad']
+# Emotion classes in correct order (updated to 3 classes)
+EMOTION_CLASSES = ['angry', 'happy', 'relaxed']
 
 __all__ = [
+    "utils",
     "resnet",
     "pure", 
     "pure34",

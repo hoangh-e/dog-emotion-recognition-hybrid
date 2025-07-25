@@ -2,7 +2,7 @@
 Swin Transformer model for dog emotion classification.
 
 This module provides Swin Transformer implementation optimized for 
-dog emotion classification with 4 emotion classes: sad, angry, happy, relaxed.
+dog emotion classification with 3 emotion classes: angry, happy, relaxed.
 """
 
 import torch
@@ -15,7 +15,7 @@ import numpy as np
 import os
 
 
-def load_swin_model(model_path, architecture='swin_t', num_classes=4, input_size=224, device='cuda'):
+def load_swin_model(model_path, architecture='swin_t', num_classes=3, input_size=224, device='cuda'):
     """
     Load a pre-trained Swin Transformer model for dog emotion classification.
     
@@ -26,7 +26,7 @@ def load_swin_model(model_path, architecture='swin_t', num_classes=4, input_size
     architecture : str
         Swin architecture ('swin_t', 'swin_s', 'swin_b', 'swin_v2_t', 'swin_v2_s', 'swin_v2_b')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     input_size : int
         Input image size (default: 224)
     device : str
@@ -109,7 +109,7 @@ def load_swin_model(model_path, architecture='swin_t', num_classes=4, input_size
 
 
 def predict_emotion_swin(image_path, model, transform, head_bbox=None, device='cuda',
-                        emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                        emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Predict dog emotion using Swin Transformer model.
     
@@ -223,7 +223,7 @@ def get_swin_transforms(input_size=224, is_training=True):
     return transform
 
 
-def create_swin_model(architecture='swin_t', num_classes=4, pretrained=True):
+def create_swin_model(architecture='swin_t', num_classes=3, pretrained=True):
     """
     Create a Swin Transformer model for dog emotion classification.
     
@@ -260,32 +260,32 @@ def create_swin_model(architecture='swin_t', num_classes=4, pretrained=True):
 
 
 # Convenience functions for specific architectures
-def load_swin_t_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_swin_t_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load Swin Transformer Tiny model for emotion classification."""
     return load_swin_model(model_path, 'swin_t', num_classes, input_size, device)
 
 
-def load_swin_s_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_swin_s_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load Swin Transformer Small model for emotion classification."""
     return load_swin_model(model_path, 'swin_s', num_classes, input_size, device)
 
 
-def load_swin_b_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_swin_b_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load Swin Transformer Base model for emotion classification."""
     return load_swin_model(model_path, 'swin_b', num_classes, input_size, device)
 
 
-def load_swin_v2_t_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_swin_v2_t_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load Swin Transformer V2 Tiny model for emotion classification."""
     return load_swin_model(model_path, 'swin_v2_t', num_classes, input_size, device)
 
 
-def load_swin_v2_s_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_swin_v2_s_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load Swin Transformer V2 Small model for emotion classification."""
     return load_swin_model(model_path, 'swin_v2_s', num_classes, input_size, device)
 
 
-def load_swin_v2_b_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_swin_v2_b_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load Swin Transformer V2 Base model for emotion classification."""
     return load_swin_model(model_path, 'swin_v2_b', num_classes, input_size, device)
 

@@ -2,7 +2,7 @@
 DenseNet models for dog emotion classification.
 
 This module provides DenseNet121, DenseNet169, and DenseNet201 implementations optimized for 
-dog emotion classification with 4 emotion classes: sad, angry, happy, relaxed.
+dog emotion classification with 3 emotion classes: angry, happy, relaxed.
 """
 
 import torch
@@ -15,7 +15,7 @@ import numpy as np
 import os
 
 
-def load_densenet_model(model_path, architecture='densenet121', num_classes=4, input_size=224, device='cuda'):
+def load_densenet_model(model_path, architecture='densenet121', num_classes=3, input_size=224, device='cuda'):
     """
     Load a pre-trained DenseNet model for dog emotion classification.
     
@@ -26,7 +26,7 @@ def load_densenet_model(model_path, architecture='densenet121', num_classes=4, i
     architecture : str
         DenseNet architecture ('densenet121', 'densenet169', 'densenet201')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     input_size : int
         Input image size (default: 224)
     device : str
@@ -110,7 +110,7 @@ def load_densenet_model(model_path, architecture='densenet121', num_classes=4, i
 
 
 def predict_emotion_densenet(image_path, model, transform, head_bbox=None, device='cuda',
-                            emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                            emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Predict dog emotion using DenseNet model.
     
@@ -224,7 +224,7 @@ def get_densenet_transforms(input_size=224, is_training=True):
     return transform
 
 
-def create_densenet_model(architecture='densenet121', num_classes=4, pretrained=True):
+def create_densenet_model(architecture='densenet121', num_classes=3, pretrained=True):
     """
     Create a DenseNet model for dog emotion classification.
     
@@ -260,17 +260,17 @@ def create_densenet_model(architecture='densenet121', num_classes=4, pretrained=
 
 
 # Convenience functions for specific architectures
-def load_densenet121_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_densenet121_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load DenseNet121 model for emotion classification."""
     return load_densenet_model(model_path, 'densenet121', num_classes, input_size, device)
 
 
-def load_densenet169_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_densenet169_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load DenseNet169 model for emotion classification."""
     return load_densenet_model(model_path, 'densenet169', num_classes, input_size, device)
 
 
-def load_densenet201_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_densenet201_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load DenseNet201 model for emotion classification."""
     return load_densenet_model(model_path, 'densenet201', num_classes, input_size, device)
 

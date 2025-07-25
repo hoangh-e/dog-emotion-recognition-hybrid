@@ -108,7 +108,7 @@ class PURe34(nn.Module):
     the second convolution in each residual block.
     """
     
-    def __init__(self, num_classes=4):
+    def __init__(self, num_classes=3):
         super(PURe34, self).__init__()
         
         self.num_classes = num_classes
@@ -255,7 +255,7 @@ def debug_checkpoint_structure(model_path):
         return {}, False, False
 
 
-def create_resnet_model(layer_structure, num_classes=4):
+def create_resnet_model(layer_structure, num_classes=3):
     """
     Create appropriate ResNet model based on layer structure analysis.
     
@@ -302,13 +302,13 @@ def create_resnet_model(layer_structure, num_classes=4):
     return model
 
 
-def load_pure34_model(model_path, num_classes=4, device='cuda'):
+def load_pure34_model(model_path, num_classes=3, device='cuda'):
     """
     Smart model loading that handles Pure34, ResNet, and architecture mismatches.
     
     Args:
         model_path (str): Path to the model checkpoint (.pth file)
-        num_classes (int): Number of emotion classes (default: 4)
+        num_classes (int): Number of emotion classes (default: 3)
         device (str): Device to load the model on ('cuda' or 'cpu')
         
     Returns:
@@ -421,14 +421,14 @@ def load_pure34_model(model_path, num_classes=4, device='cuda'):
         raise
 
 
-def load_resnet_model(model_path, num_classes=4, device='cuda'):
+def load_resnet_model(model_path, num_classes=3, device='cuda'):
     """
     Load a ResNet model for emotion classification as fallback.
     Auto-detects ResNet18 vs ResNet34 vs ResNet50 based on available layers.
     
     Args:
         model_path (str): Path to the model checkpoint (.pth file)
-        num_classes (int): Number of emotion classes (default: 4)
+        num_classes (int): Number of emotion classes (default: 3)
         device (str): Device to load the model on ('cuda' or 'cpu')
         
     Returns:

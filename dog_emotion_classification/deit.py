@@ -2,7 +2,7 @@
 DeiT (Data-efficient Image Transformers) models for dog emotion classification.
 
 This module provides DeiT implementations optimized for dog emotion classification 
-with 4 emotion classes: sad, angry, happy, relaxed.
+with 3 emotion classes: angry, happy, relaxed.
 
 Based on "Training data-efficient image transformers & distillation through attention"
 by Hugo Touvron et al. (2021).
@@ -28,7 +28,7 @@ except ImportError:
 class DeiTModel(nn.Module):
     """DeiT model with distillation support for dog emotion classification."""
     
-    def __init__(self, model_name='deit_small_patch16_224', num_classes=4, 
+    def __init__(self, model_name='deit_small_patch16_224', num_classes=3, 
                  pretrained=True, distillation=True):
         super().__init__()
         self.distillation = distillation
@@ -76,14 +76,14 @@ class DeiTModel(nn.Module):
             return logits
 
 
-def load_deit_model(model_path=None, architecture='deit_small', num_classes=4, input_size=224, device='cuda'):
+def load_deit_model(model_path=None, architecture='deit_small', num_classes=3, input_size=224, device='cuda'):
     """
     Load DeiT model for dog emotion classification.
     
     Args:
         model_path: Path to model checkpoint
         architecture: DeiT variant ('deit_tiny', 'deit_small', 'deit_base')
-        num_classes: Number of emotion classes (default: 4)
+        num_classes: Number of emotion classes (default: 3)
         input_size: Input image size (default: 224)
         device: Device to load model on
     
@@ -139,7 +139,7 @@ def load_deit_model(model_path=None, architecture='deit_small', num_classes=4, i
 
 
 def predict_emotion_deit(image_path, model, transform=None, head_bbox=None, device='cuda',
-                         emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                         emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Predict dog emotion using DeiT model.
     
@@ -286,7 +286,7 @@ DEIT_VARIANTS = {
 }
 
 
-def load_deit_model_standard(model_path, architecture='deit_small', num_classes=4, input_size=224, device='cuda'):
+def load_deit_model_standard(model_path, architecture='deit_small', num_classes=3, input_size=224, device='cuda'):
     """
     Standardized load function for DeiT model to match other modules.
     
@@ -297,7 +297,7 @@ def load_deit_model_standard(model_path, architecture='deit_small', num_classes=
     architecture : str
         DeiT architecture ('deit_tiny', 'deit_small', 'deit_base')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     input_size : int
         Input image size (default: 224)
     device : str
@@ -332,7 +332,7 @@ def load_deit_model_standard(model_path, architecture='deit_small', num_classes=
 
 
 def predict_emotion_deit_standard(image_path, model, transform, head_bbox=None, device='cuda',
-                                 emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                                 emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Standardized predict function for DeiT model to match other modules.
     
@@ -389,7 +389,7 @@ def predict_emotion_deit_standard(image_path, model, transform, head_bbox=None, 
 # Alias functions for consistency with other modules
 # Note: Renamed to avoid conflicts with existing functions
 
-def load_deit_model_main(model_path, architecture='deit_small', num_classes=4, input_size=224, device='cuda'):
+def load_deit_model_main(model_path, architecture='deit_small', num_classes=3, input_size=224, device='cuda'):
     """
     Main load function for DeiT model (standardized version).
     """
@@ -397,7 +397,7 @@ def load_deit_model_main(model_path, architecture='deit_small', num_classes=4, i
 
 
 def predict_emotion_deit_main(image_path, model, transform, head_bbox=None, device='cuda',
-                             emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                             emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Main predict function for DeiT model (standardized version).
     """

@@ -2,7 +2,7 @@
 ShuffleNet model for dog emotion classification.
 
 This module provides ShuffleNet implementation optimized for 
-dog emotion classification with 4 emotion classes: sad, angry, happy, relaxed.
+dog emotion classification with 3 emotion classes: angry, happy, relaxed.
 """
 
 import torch
@@ -15,7 +15,7 @@ import numpy as np
 import os
 
 
-def load_shufflenet_model(model_path, architecture='shufflenet_v2_x1_0', num_classes=4, input_size=224, device='cuda'):
+def load_shufflenet_model(model_path, architecture='shufflenet_v2_x1_0', num_classes=3, input_size=224, device='cuda'):
     """
     Load a pre-trained ShuffleNet model for dog emotion classification.
     
@@ -26,7 +26,7 @@ def load_shufflenet_model(model_path, architecture='shufflenet_v2_x1_0', num_cla
     architecture : str
         ShuffleNet architecture ('shufflenet_v2_x0_5', 'shufflenet_v2_x1_0', 'shufflenet_v2_x1_5', 'shufflenet_v2_x2_0')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     input_size : int
         Input image size (default: 224)
     device : str
@@ -109,7 +109,7 @@ def load_shufflenet_model(model_path, architecture='shufflenet_v2_x1_0', num_cla
 
 
 def predict_emotion_shufflenet(image_path, model, transform, head_bbox=None, device='cuda',
-                              emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                              emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Predict dog emotion using ShuffleNet model.
     
@@ -223,7 +223,7 @@ def get_shufflenet_transforms(input_size=224, is_training=True):
     return transform
 
 
-def create_shufflenet_model(architecture='shufflenet_v2_x1_0', num_classes=4, pretrained=True):
+def create_shufflenet_model(architecture='shufflenet_v2_x1_0', num_classes=3, pretrained=True):
     """
     Create a ShuffleNet model for dog emotion classification.
     
@@ -260,22 +260,22 @@ def create_shufflenet_model(architecture='shufflenet_v2_x1_0', num_classes=4, pr
 
 
 # Convenience functions for specific architectures
-def load_shufflenet_v2_x0_5_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_shufflenet_v2_x0_5_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load ShuffleNet V2 x0.5 model for emotion classification."""
     return load_shufflenet_model(model_path, 'shufflenet_v2_x0_5', num_classes, input_size, device)
 
 
-def load_shufflenet_v2_x1_0_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_shufflenet_v2_x1_0_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load ShuffleNet V2 x1.0 model for emotion classification."""
     return load_shufflenet_model(model_path, 'shufflenet_v2_x1_0', num_classes, input_size, device)
 
 
-def load_shufflenet_v2_x1_5_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_shufflenet_v2_x1_5_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load ShuffleNet V2 x1.5 model for emotion classification."""
     return load_shufflenet_model(model_path, 'shufflenet_v2_x1_5', num_classes, input_size, device)
 
 
-def load_shufflenet_v2_x2_0_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_shufflenet_v2_x2_0_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load ShuffleNet V2 x2.0 model for emotion classification."""
     return load_shufflenet_model(model_path, 'shufflenet_v2_x2_0', num_classes, input_size, device)
 

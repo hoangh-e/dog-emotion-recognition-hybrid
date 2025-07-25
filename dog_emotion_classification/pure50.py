@@ -8,7 +8,7 @@ multi-model notebooks that expect separate pure50 loading functions.
 from .pure import Pure50, get_pure_transforms, predict_emotion_pure, load_pure_model
 
 
-def load_pure50_model(model_path, num_classes=4, input_size=512, device='cuda'):
+def load_pure50_model(model_path, num_classes=3, input_size=512, device='cuda'):
     """
     Load Pure50 model for dog emotion classification.
     
@@ -20,7 +20,7 @@ def load_pure50_model(model_path, num_classes=4, input_size=512, device='cuda'):
     model_path : str
         Path to the saved Pure50 model checkpoint
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     input_size : int
         Input image size (default: 512)
     device : str
@@ -41,7 +41,7 @@ def load_pure50_model(model_path, num_classes=4, input_size=512, device='cuda'):
 
 
 def predict_emotion_pure50(image_path, model, transform, head_bbox=None, device='cuda',
-                          emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                          emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Predict dog emotion using Pure50 model.
     
@@ -97,7 +97,7 @@ def get_pure50_transforms(input_size=512, is_training=True):
     return get_pure_transforms(input_size=input_size, is_training=is_training)
 
 
-def create_pure50_model(num_classes=4, input_size=512):
+def create_pure50_model(num_classes=3, input_size=512):
     """
     Create a Pure50 model for dog emotion classification.
     

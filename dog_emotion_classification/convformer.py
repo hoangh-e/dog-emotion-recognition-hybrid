@@ -2,7 +2,7 @@
 ConvFormer models for dog emotion classification.
 
 This module provides ConvFormer implementations optimized for
-dog emotion recognition with 4 emotion classes: ['angry', 'happy', 'relaxed', 'sad'].
+dog emotion recognition with 3 emotion classes: ['angry', 'happy', 'relaxed', 'sad'].
 
 ConvFormer combines convolution and transformer architectures for efficient
 image classification with both local and global feature extraction.
@@ -111,7 +111,7 @@ class DropPath(nn.Module):
 class ConvFormerModel(nn.Module):
     """ConvFormer model for emotion classification."""
     
-    def __init__(self, img_size=224, patch_size=16, in_chans=3, num_classes=4,
+    def __init__(self, img_size=224, patch_size=16, in_chans=3, num_classes=3,
                  embed_dim=384, depth=12, num_heads=6, mlp_ratio=4.0,
                  qkv_bias=True, drop_rate=0.0, attn_drop_rate=0.0, drop_path_rate=0.1):
         super().__init__()
@@ -198,7 +198,7 @@ def load_convformer_model(model_path: str, architecture: str = 'convformer_small
     Args:
         model_path: Path to the saved model file
         architecture: ConvFormer architecture ('convformer_tiny', 'convformer_small', 'convformer_base')
-        num_classes: Number of emotion classes (default: 4)
+        num_classes: Number of emotion classes (default: 3)
         input_size: Input image size (default: 224)
         device: Device to load the model on ('cuda' or 'cpu')
     

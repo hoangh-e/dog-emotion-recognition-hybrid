@@ -2,7 +2,7 @@
 SqueezeNet model for dog emotion classification.
 
 This module provides SqueezeNet implementation optimized for 
-dog emotion classification with 4 emotion classes: sad, angry, happy, relaxed.
+dog emotion classification with 3 emotion classes: angry, happy, relaxed.
 """
 
 import torch
@@ -15,7 +15,7 @@ import numpy as np
 import os
 
 
-def load_squeezenet_model(model_path, architecture='squeezenet1_0', num_classes=4, input_size=224, device='cuda'):
+def load_squeezenet_model(model_path, architecture='squeezenet1_0', num_classes=3, input_size=224, device='cuda'):
     """
     Load a pre-trained SqueezeNet model for dog emotion classification.
     
@@ -26,7 +26,7 @@ def load_squeezenet_model(model_path, architecture='squeezenet1_0', num_classes=
     architecture : str
         SqueezeNet architecture ('squeezenet1_0' or 'squeezenet1_1')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     input_size : int
         Input image size (default: 224)
     device : str
@@ -116,7 +116,7 @@ def load_squeezenet_model(model_path, architecture='squeezenet1_0', num_classes=
 
 
 def predict_emotion_squeezenet(image_path, model, transform, head_bbox=None, device='cuda',
-                              emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                              emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Predict dog emotion using SqueezeNet model.
     
@@ -230,7 +230,7 @@ def get_squeezenet_transforms(input_size=224, is_training=True):
     return transform
 
 
-def create_squeezenet_model(architecture='squeezenet1_0', num_classes=4, pretrained=True):
+def create_squeezenet_model(architecture='squeezenet1_0', num_classes=3, pretrained=True):
     """
     Create a SqueezeNet model for dog emotion classification.
     
@@ -269,12 +269,12 @@ def create_squeezenet_model(architecture='squeezenet1_0', num_classes=4, pretrai
 
 
 # Convenience functions for specific architectures
-def load_squeezenet1_0_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_squeezenet1_0_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load SqueezeNet 1.0 model for emotion classification."""
     return load_squeezenet_model(model_path, 'squeezenet1_0', num_classes, input_size, device)
 
 
-def load_squeezenet1_1_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_squeezenet1_1_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load SqueezeNet 1.1 model for emotion classification."""
     return load_squeezenet_model(model_path, 'squeezenet1_1', num_classes, input_size, device)
 

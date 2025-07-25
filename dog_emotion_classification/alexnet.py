@@ -2,7 +2,7 @@
 AlexNet model for dog emotion classification.
 
 This module provides AlexNet implementation optimized for 
-dog emotion classification with 4 emotion classes: sad, angry, happy, relaxed.
+dog emotion classification with 3 emotion classes: angry, happy, relaxed.
 """
 
 import torch
@@ -15,7 +15,7 @@ import numpy as np
 import os
 
 
-def load_alexnet_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_alexnet_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """
     Load a pre-trained AlexNet model for dog emotion classification.
     
@@ -24,7 +24,7 @@ def load_alexnet_model(model_path, num_classes=4, input_size=224, device='cuda')
     model_path : str
         Path to the saved model checkpoint
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     input_size : int
         Input image size (default: 224)
     device : str
@@ -99,7 +99,7 @@ def load_alexnet_model(model_path, num_classes=4, input_size=224, device='cuda')
 
 
 def predict_emotion_alexnet(image_path, model, transform, head_bbox=None, device='cuda',
-                           emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                           emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Predict dog emotion using AlexNet model.
     
@@ -213,7 +213,7 @@ def get_alexnet_transforms(input_size=224, is_training=True):
     return transform
 
 
-def create_alexnet_model(num_classes=4, pretrained=True):
+def create_alexnet_model(num_classes=3, pretrained=True):
     """
     Create an AlexNet model for dog emotion classification.
     
@@ -241,7 +241,7 @@ def create_alexnet_model(num_classes=4, pretrained=True):
 
 
 # Convenience function
-def load_alexnet_emotion_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_alexnet_emotion_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load AlexNet model for emotion classification."""
     return load_alexnet_model(model_path, num_classes, input_size, device)
 

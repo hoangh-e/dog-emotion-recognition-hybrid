@@ -2,7 +2,7 @@
 NFNet (Normalizer-Free Networks) models for dog emotion classification.
 
 This module provides NFNet implementations optimized for 
-dog emotion classification with 4 emotion classes: sad, angry, happy, relaxed.
+dog emotion classification with 3 emotion classes: angry, happy, relaxed.
 """
 
 import torch
@@ -164,7 +164,7 @@ class NFNetStem(nn.Module):
 class NFNetModel(nn.Module):
     """NFNet model for emotion classification."""
     
-    def __init__(self, num_classes=4, variant='F0', drop_path_rate=0.1):
+    def __init__(self, num_classes=3, variant='F0', drop_path_rate=0.1):
         super().__init__()
         
         # Architecture configurations
@@ -252,7 +252,7 @@ class NFNetModel(nn.Module):
         return x
 
 
-def load_nfnet_model(model_path, architecture='nfnet_f0', num_classes=4, input_size=224, device='cuda'):
+def load_nfnet_model(model_path, architecture='nfnet_f0', num_classes=3, input_size=224, device='cuda'):
     """
     Load a pre-trained NFNet model for dog emotion classification.
     
@@ -263,7 +263,7 @@ def load_nfnet_model(model_path, architecture='nfnet_f0', num_classes=4, input_s
     architecture : str
         NFNet architecture ('nfnet_f0' to 'nfnet_f5')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     input_size : int
         Input image size (default: 224)
     device : str
@@ -336,7 +336,7 @@ def load_nfnet_model(model_path, architecture='nfnet_f0', num_classes=4, input_s
 
 
 def predict_emotion_nfnet(image_path, model, transform, head_bbox=None, device='cuda',
-                         emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                         emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Predict dog emotion using NFNet model.
     
@@ -450,7 +450,7 @@ def get_nfnet_transforms(input_size=224, is_training=True):
     return transform
 
 
-def create_nfnet_model(architecture='nfnet_f0', num_classes=4, pretrained=False):
+def create_nfnet_model(architecture='nfnet_f0', num_classes=3, pretrained=False):
     """
     Create an NFNet model for emotion classification.
     
@@ -459,7 +459,7 @@ def create_nfnet_model(architecture='nfnet_f0', num_classes=4, pretrained=False)
     architecture : str
         NFNet architecture ('nfnet_f0' to 'nfnet_f5')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     pretrained : bool
         Whether to use pretrained weights (default: False)
         
@@ -477,22 +477,22 @@ def create_nfnet_model(architecture='nfnet_f0', num_classes=4, pretrained=False)
 
 
 # Convenience functions for specific architectures
-def load_nfnet_f0_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_nfnet_f0_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_nfnet_model(model_path, 'nfnet_f0', num_classes, input_size, device)
 
-def load_nfnet_f1_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_nfnet_f1_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_nfnet_model(model_path, 'nfnet_f1', num_classes, input_size, device)
 
-def load_nfnet_f2_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_nfnet_f2_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_nfnet_model(model_path, 'nfnet_f2', num_classes, input_size, device)
 
-def load_nfnet_f3_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_nfnet_f3_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_nfnet_model(model_path, 'nfnet_f3', num_classes, input_size, device)
 
-def load_nfnet_f4_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_nfnet_f4_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_nfnet_model(model_path, 'nfnet_f4', num_classes, input_size, device)
 
-def load_nfnet_f5_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_nfnet_f5_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_nfnet_model(model_path, 'nfnet_f5', num_classes, input_size, device)
 
 def predict_emotion_nfnet_f0(image_path, model, transform, head_bbox=None, device='cuda'):

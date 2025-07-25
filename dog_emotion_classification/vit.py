@@ -2,7 +2,7 @@
 Vision Transformer (ViT) models for dog emotion classification.
 
 This module provides ViT-B/16 and ViT-L/16 implementations optimized for 
-dog emotion classification with 4 emotion classes: sad, angry, happy, relaxed.
+dog emotion classification with 3 emotion classes: angry, happy, relaxed.
 """
 
 import torch
@@ -15,7 +15,7 @@ import numpy as np
 import os
 
 
-def load_vit_model(model_path, architecture='vit_b_16', num_classes=4, input_size=224, device='cuda'):
+def load_vit_model(model_path, architecture='vit_b_16', num_classes=3, input_size=224, device='cuda'):
     """
     Load a pre-trained Vision Transformer model for dog emotion classification.
     
@@ -26,7 +26,7 @@ def load_vit_model(model_path, architecture='vit_b_16', num_classes=4, input_siz
     architecture : str
         ViT architecture ('vit_b_16', 'vit_l_16', 'vit_h_14')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     input_size : int
         Input image size (default: 224)
     device : str
@@ -112,7 +112,7 @@ def load_vit_model(model_path, architecture='vit_b_16', num_classes=4, input_siz
 
 
 def predict_emotion_vit(image_path, model, transform, head_bbox=None, device='cuda',
-                       emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                       emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Predict dog emotion using Vision Transformer model.
     
@@ -226,7 +226,7 @@ def get_vit_transforms(input_size=224, is_training=True):
     return transform
 
 
-def create_vit_model(architecture='vit_b_16', num_classes=4, pretrained=True):
+def create_vit_model(architecture='vit_b_16', num_classes=3, pretrained=True):
     """
     Create a Vision Transformer model for dog emotion classification.
     
@@ -262,17 +262,17 @@ def create_vit_model(architecture='vit_b_16', num_classes=4, pretrained=True):
 
 
 # Convenience functions for specific architectures
-def load_vit_b_16_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_vit_b_16_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load ViT-B/16 model for emotion classification."""
     return load_vit_model(model_path, 'vit_b_16', num_classes, input_size, device)
 
 
-def load_vit_l_16_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_vit_l_16_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load ViT-L/16 model for emotion classification."""
     return load_vit_model(model_path, 'vit_l_16', num_classes, input_size, device)
 
 
-def load_vit_h_14_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_vit_h_14_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load ViT-H/14 model for emotion classification."""
     return load_vit_model(model_path, 'vit_h_14', num_classes, input_size, device)
 

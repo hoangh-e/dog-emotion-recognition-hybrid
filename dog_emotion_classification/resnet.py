@@ -2,7 +2,7 @@
 ResNet models for dog emotion classification.
 
 This module provides ResNet50 and ResNet101 implementations optimized for 
-dog emotion classification with 4 emotion classes: sad, angry, happy, relaxed.
+dog emotion classification with 3 emotion classes: angry, happy, relaxed.
 """
 
 import torch
@@ -15,7 +15,7 @@ import numpy as np
 import os
 
 
-def load_resnet_model(model_path, architecture='resnet50', num_classes=4, input_size=224, device='cuda'):
+def load_resnet_model(model_path, architecture='resnet50', num_classes=3, input_size=224, device='cuda'):
     """
     Load a pre-trained ResNet model for dog emotion classification.
     
@@ -26,7 +26,7 @@ def load_resnet_model(model_path, architecture='resnet50', num_classes=4, input_
     architecture : str
         ResNet architecture ('resnet50' or 'resnet101')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     input_size : int
         Input image size (default: 224)
     device : str
@@ -107,7 +107,7 @@ def load_resnet_model(model_path, architecture='resnet50', num_classes=4, input_
 
 
 def predict_emotion_resnet(image_path, model, transform, head_bbox=None, device='cuda',
-                          emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                          emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Predict dog emotion using ResNet model.
     
@@ -221,7 +221,7 @@ def get_resnet_transforms(input_size=224, is_training=True):
     return transform
 
 
-def create_resnet_model(architecture='resnet50', num_classes=4, pretrained=True):
+def create_resnet_model(architecture='resnet50', num_classes=3, pretrained=True):
     """
     Create a ResNet model for dog emotion classification.
     
@@ -255,12 +255,12 @@ def create_resnet_model(architecture='resnet50', num_classes=4, pretrained=True)
 
 
 # Convenience functions for specific architectures
-def load_resnet50_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_resnet50_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load ResNet50 model for emotion classification."""
     return load_resnet_model(model_path, 'resnet50', num_classes, input_size, device)
 
 
-def load_resnet101_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_resnet101_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load ResNet101 model for emotion classification."""
     return load_resnet_model(model_path, 'resnet101', num_classes, input_size, device)
 

@@ -2,7 +2,7 @@
 CvT (Convolutional Vision Transformer) models for dog emotion classification.
 
 This module provides CvT implementations optimized for
-dog emotion recognition with 4 emotion classes: ['angry', 'happy', 'relaxed', 'sad'].
+dog emotion recognition with 3 emotion classes: ['angry', 'happy', 'relaxed', 'sad'].
 
 CvT introduces convolutions into vision transformers to improve efficiency
 and performance by combining the benefits of CNNs and Transformers.
@@ -178,7 +178,7 @@ class CvTStage(nn.Module):
 class CvTModel(nn.Module):
     """CvT model for emotion classification."""
     
-    def __init__(self, img_size=224, in_chans=3, num_classes=4, 
+    def __init__(self, img_size=224, in_chans=3, num_classes=3, 
                  patch_size=[7, 3, 3], patch_stride=[4, 2, 2], patch_padding=[2, 1, 1],
                  embed_dim=[64, 192, 384], depth=[1, 2, 10], num_heads=[1, 3, 6],
                  mlp_ratio=[4.0, 4.0, 4.0], qkv_bias=[True, True, True],
@@ -251,7 +251,7 @@ def load_cvt_model(model_path: str, architecture: str = 'cvt_13',
     Args:
         model_path: Path to the saved model file
         architecture: CvT architecture ('cvt_13', 'cvt_21', 'cvt_w24')
-        num_classes: Number of emotion classes (default: 4)
+        num_classes: Number of emotion classes (default: 3)
         input_size: Input image size (default: 224)
         device: Device to load the model on ('cuda' or 'cpu')
     

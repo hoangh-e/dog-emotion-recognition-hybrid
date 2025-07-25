@@ -2,7 +2,7 @@
 CMT (Convolutional Multi-Head Transformer) models for dog emotion classification.
 
 This module provides CMT implementations optimized for
-dog emotion recognition with 4 emotion classes: ['angry', 'happy', 'relaxed', 'sad'].
+dog emotion recognition with 3 emotion classes: ['angry', 'happy', 'relaxed', 'sad'].
 
 CMT combines convolutional layers with multi-head transformers for efficient
 vision tasks, providing both local and global feature extraction capabilities.
@@ -173,7 +173,7 @@ class DropPath(nn.Module):
 class CMTModel(nn.Module):
     """CMT model for emotion classification."""
     
-    def __init__(self, img_size=224, in_chans=3, num_classes=4, 
+    def __init__(self, img_size=224, in_chans=3, num_classes=3, 
                  embed_dims=[46, 92, 184, 368], depths=[2, 2, 10, 2], num_heads=[1, 2, 4, 8],
                  mlp_ratios=[3.6, 3.6, 3.6, 3.6], qkv_bias=True, drop_rate=0.0, attn_drop_rate=0.0,
                  drop_path_rate=0.1, norm_layer=nn.LayerNorm, act_layer=nn.GELU):
@@ -254,7 +254,7 @@ def load_cmt_model(model_path: str, architecture: str = 'cmt_ti',
     Args:
         model_path: Path to the saved model file
         architecture: CMT architecture ('cmt_ti', 'cmt_xs', 'cmt_s', 'cmt_b')
-        num_classes: Number of emotion classes (default: 4)
+        num_classes: Number of emotion classes (default: 3)
         input_size: Input image size (default: 224)
         device: Device to load the model on ('cuda' or 'cpu')
     

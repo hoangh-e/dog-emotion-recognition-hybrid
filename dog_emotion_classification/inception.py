@@ -2,7 +2,7 @@
 Inception models for dog emotion classification.
 
 This module provides Inception v3 and GoogLeNet implementations optimized for 
-dog emotion classification with 4 emotion classes: sad, angry, happy, relaxed.
+dog emotion classification with 3 emotion classes: angry, happy, relaxed.
 """
 
 import torch
@@ -15,7 +15,7 @@ import numpy as np
 import os
 
 
-def load_inception_model(model_path, architecture='inception_v3', num_classes=4, input_size=299, device='cuda'):
+def load_inception_model(model_path, architecture='inception_v3', num_classes=3, input_size=299, device='cuda'):
     """
     Load a pre-trained Inception model for dog emotion classification.
     
@@ -26,7 +26,7 @@ def load_inception_model(model_path, architecture='inception_v3', num_classes=4,
     architecture : str
         Inception architecture ('inception_v3' or 'googlenet')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     input_size : int
         Input image size (default: 299 for Inception v3, 224 for GoogLeNet)
     device : str
@@ -122,7 +122,7 @@ def load_inception_model(model_path, architecture='inception_v3', num_classes=4,
 
 
 def predict_emotion_inception(image_path, model, transform, head_bbox=None, device='cuda',
-                             emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                             emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Predict dog emotion using Inception model.
     
@@ -239,7 +239,7 @@ def get_inception_transforms(input_size=299, is_training=True):
     return transform
 
 
-def create_inception_model(architecture='inception_v3', num_classes=4, pretrained=True):
+def create_inception_model(architecture='inception_v3', num_classes=3, pretrained=True):
     """
     Create an Inception model for dog emotion classification.
     
@@ -275,12 +275,12 @@ def create_inception_model(architecture='inception_v3', num_classes=4, pretraine
 
 
 # Convenience functions for specific architectures
-def load_inception_v3_model(model_path, num_classes=4, input_size=299, device='cuda'):
+def load_inception_v3_model(model_path, num_classes=3, input_size=299, device='cuda'):
     """Load Inception v3 model for emotion classification."""
     return load_inception_model(model_path, 'inception_v3', num_classes, input_size, device)
 
 
-def load_googlenet_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_googlenet_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load GoogLeNet model for emotion classification."""
     return load_inception_model(model_path, 'googlenet', num_classes, input_size, device)
 

@@ -2,7 +2,7 @@
 CoAtNet (Convolution and Attention Network) models for dog emotion classification.
 
 This module provides CoAtNet implementations optimized for 
-dog emotion classification with 4 emotion classes: sad, angry, happy, relaxed.
+dog emotion classification with 3 emotion classes: angry, happy, relaxed.
 """
 
 import torch
@@ -232,7 +232,7 @@ class CoAtNetStage(nn.Module):
 class CoAtNetModel(nn.Module):
     """CoAtNet model for emotion classification."""
     
-    def __init__(self, num_classes=4, depths=[2, 2, 3, 5, 2], dims=[64, 96, 192, 384, 768]):
+    def __init__(self, num_classes=3, depths=[2, 2, 3, 5, 2], dims=[64, 96, 192, 384, 768]):
         super().__init__()
         
         # Stem
@@ -309,7 +309,7 @@ class CoAtNetModel(nn.Module):
         return x
 
 
-def load_coatnet_model(model_path, architecture='coatnet_0', num_classes=4, input_size=224, device='cuda'):
+def load_coatnet_model(model_path, architecture='coatnet_0', num_classes=3, input_size=224, device='cuda'):
     """
     Load a pre-trained CoAtNet model for dog emotion classification.
     
@@ -320,7 +320,7 @@ def load_coatnet_model(model_path, architecture='coatnet_0', num_classes=4, inpu
     architecture : str
         CoAtNet architecture ('coatnet_0', 'coatnet_1', 'coatnet_2')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     input_size : int
         Input image size (default: 224)
     device : str
@@ -398,7 +398,7 @@ def load_coatnet_model(model_path, architecture='coatnet_0', num_classes=4, inpu
 
 
 def predict_emotion_coatnet(image_path, model, transform, head_bbox=None, device='cuda',
-                           emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                           emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Predict dog emotion using CoAtNet model.
     
@@ -512,7 +512,7 @@ def get_coatnet_transforms(input_size=224, is_training=True):
     return transform
 
 
-def create_coatnet_model(architecture='coatnet_0', num_classes=4, pretrained=False):
+def create_coatnet_model(architecture='coatnet_0', num_classes=3, pretrained=False):
     """
     Create a CoAtNet model for emotion classification.
     
@@ -521,7 +521,7 @@ def create_coatnet_model(architecture='coatnet_0', num_classes=4, pretrained=Fal
     architecture : str
         CoAtNet architecture ('coatnet_0', 'coatnet_1', 'coatnet_2')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     pretrained : bool
         Whether to use pretrained weights (default: False)
         
@@ -544,13 +544,13 @@ def create_coatnet_model(architecture='coatnet_0', num_classes=4, pretrained=Fal
 
 
 # Convenience functions for specific architectures
-def load_coatnet_0_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_coatnet_0_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_coatnet_model(model_path, 'coatnet_0', num_classes, input_size, device)
 
-def load_coatnet_1_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_coatnet_1_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_coatnet_model(model_path, 'coatnet_1', num_classes, input_size, device)
 
-def load_coatnet_2_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_coatnet_2_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_coatnet_model(model_path, 'coatnet_2', num_classes, input_size, device)
 
 def predict_emotion_coatnet_0(image_path, model, transform, head_bbox=None, device='cuda'):

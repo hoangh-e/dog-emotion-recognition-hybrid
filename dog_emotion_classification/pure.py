@@ -167,7 +167,7 @@ class PUReNet(nn.Module):
     - Pure152: [3, 8, 36, 3] with BottleneckProductBlock
     """
     
-    def __init__(self, block, layers, num_classes=4, input_size=512):
+    def __init__(self, block, layers, num_classes=3, input_size=512):
         super(PUReNet, self).__init__()
         
         self.num_classes = num_classes
@@ -243,32 +243,32 @@ class PUReNet(nn.Module):
         return x
 
 
-def Pure18(num_classes=4, input_size=512):
+def Pure18(num_classes=3, input_size=512):
     """Pure18 model with basic product blocks."""
     return PUReNet(BasicProductBlock, [2, 2, 2, 2], num_classes, input_size)
 
 
-def Pure34(num_classes=4, input_size=512):
+def Pure34(num_classes=3, input_size=512):
     """Pure34 model with basic product blocks."""
     return PUReNet(BasicProductBlock, [3, 4, 6, 3], num_classes, input_size)
 
 
-def Pure50(num_classes=4, input_size=512):
+def Pure50(num_classes=3, input_size=512):
     """Pure50 model with bottleneck product blocks."""
     return PUReNet(BottleneckProductBlock, [3, 4, 6, 3], num_classes, input_size)
 
 
-def Pure101(num_classes=4, input_size=512):
+def Pure101(num_classes=3, input_size=512):
     """Pure101 model with bottleneck product blocks."""
     return PUReNet(BottleneckProductBlock, [3, 4, 23, 3], num_classes, input_size)
 
 
-def Pure152(num_classes=4, input_size=512):
+def Pure152(num_classes=3, input_size=512):
     """Pure152 model with bottleneck product blocks."""
     return PUReNet(BottleneckProductBlock, [3, 8, 36, 3], num_classes, input_size)
 
 
-def get_pure_model(architecture, num_classes=4, input_size=512):
+def get_pure_model(architecture, num_classes=3, input_size=512):
     """
     Get a Pure model by architecture name.
     
@@ -545,7 +545,7 @@ def get_pure_transforms(input_size=512, is_training=True):
 
 
 def predict_emotion_pure(image_path, model, transform, head_bbox=None, device='cuda', 
-                        emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                        emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Predict dog emotion using Pure model.
     
@@ -604,7 +604,7 @@ def predict_emotion_pure(image_path, model, transform, head_bbox=None, device='c
         return result
 
 
-def load_pure_model(model_path, architecture='pure34', num_classes=4, input_size=512, device='cuda'):
+def load_pure_model(model_path, architecture='pure34', num_classes=3, input_size=512, device='cuda'):
     """
     Load a trained Pure model from checkpoint.
     

@@ -2,7 +2,7 @@
 MaxViT (Multi-Axis Vision Transformer) models for dog emotion classification.
 
 This module provides MaxViT implementations optimized for 
-dog emotion classification with 4 emotion classes: sad, angry, happy, relaxed.
+dog emotion classification with 3 emotion classes: angry, happy, relaxed.
 """
 
 import torch
@@ -206,7 +206,7 @@ class MaxViTBlock(nn.Module):
 class MaxViTModel(nn.Module):
     """MaxViT model for emotion classification."""
     
-    def __init__(self, num_classes=4, depths=[2, 2, 5, 2], dims=[64, 128, 256, 512]):
+    def __init__(self, num_classes=3, depths=[2, 2, 5, 2], dims=[64, 128, 256, 512]):
         super().__init__()
         
         # Stem
@@ -275,7 +275,7 @@ class MaxViTModel(nn.Module):
         return x
 
 
-def load_maxvit_model(model_path, architecture='maxvit_tiny', num_classes=4, input_size=224, device='cuda'):
+def load_maxvit_model(model_path, architecture='maxvit_tiny', num_classes=3, input_size=224, device='cuda'):
     """
     Load a pre-trained MaxViT model for dog emotion classification.
     
@@ -286,7 +286,7 @@ def load_maxvit_model(model_path, architecture='maxvit_tiny', num_classes=4, inp
     architecture : str
         MaxViT architecture ('maxvit_tiny', 'maxvit_small', 'maxvit_base')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     input_size : int
         Input image size (default: 224)
     device : str
@@ -382,7 +382,7 @@ def load_maxvit_model(model_path, architecture='maxvit_tiny', num_classes=4, inp
 
 
 def predict_emotion_maxvit(image_path, model, transform, head_bbox=None, device='cuda',
-                          emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                          emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Predict dog emotion using MaxViT model.
     
@@ -496,7 +496,7 @@ def get_maxvit_transforms(input_size=224, is_training=True):
     return transform
 
 
-def create_maxvit_model(architecture='maxvit_tiny', num_classes=4, pretrained=False):
+def create_maxvit_model(architecture='maxvit_tiny', num_classes=3, pretrained=False):
     """
     Create a MaxViT model for emotion classification.
     
@@ -505,7 +505,7 @@ def create_maxvit_model(architecture='maxvit_tiny', num_classes=4, pretrained=Fa
     architecture : str
         MaxViT architecture ('maxvit_tiny', 'maxvit_small', 'maxvit_base')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     pretrained : bool
         Whether to use pretrained weights (default: False)
         
@@ -528,13 +528,13 @@ def create_maxvit_model(architecture='maxvit_tiny', num_classes=4, pretrained=Fa
 
 
 # Convenience functions for specific architectures
-def load_maxvit_tiny_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_maxvit_tiny_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_maxvit_model(model_path, 'maxvit_tiny', num_classes, input_size, device)
 
-def load_maxvit_small_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_maxvit_small_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_maxvit_model(model_path, 'maxvit_small', num_classes, input_size, device)
 
-def load_maxvit_base_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_maxvit_base_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_maxvit_model(model_path, 'maxvit_base', num_classes, input_size, device)
 
 def predict_emotion_maxvit_tiny(image_path, model, transform, head_bbox=None, device='cuda'):

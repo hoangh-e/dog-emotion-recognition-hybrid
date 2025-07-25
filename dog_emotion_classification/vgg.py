@@ -2,7 +2,7 @@
 VGG models for dog emotion classification.
 
 This module provides VGG16 and VGG19 implementations optimized for 
-dog emotion classification with 4 emotion classes: sad, angry, happy, relaxed.
+dog emotion classification with 3 emotion classes: angry, happy, relaxed.
 """
 
 import torch
@@ -15,7 +15,7 @@ import numpy as np
 import os
 
 
-def load_vgg_model(model_path, architecture='vgg16', num_classes=4, input_size=224, device='cuda'):
+def load_vgg_model(model_path, architecture='vgg16', num_classes=3, input_size=224, device='cuda'):
     """
     Load a pre-trained VGG model for dog emotion classification.
     
@@ -26,7 +26,7 @@ def load_vgg_model(model_path, architecture='vgg16', num_classes=4, input_size=2
     architecture : str
         VGG architecture ('vgg16' or 'vgg19')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     input_size : int
         Input image size (default: 224)
     device : str
@@ -107,7 +107,7 @@ def load_vgg_model(model_path, architecture='vgg16', num_classes=4, input_size=2
 
 
 def predict_emotion_vgg(image_path, model, transform, head_bbox=None, device='cuda',
-                       emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                       emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Predict dog emotion using VGG model.
     
@@ -221,7 +221,7 @@ def get_vgg_transforms(input_size=224, is_training=True):
     return transform
 
 
-def create_vgg_model(architecture='vgg16', num_classes=4, pretrained=True):
+def create_vgg_model(architecture='vgg16', num_classes=3, pretrained=True):
     """
     Create a VGG model for dog emotion classification.
     
@@ -255,12 +255,12 @@ def create_vgg_model(architecture='vgg16', num_classes=4, pretrained=True):
 
 
 # Convenience functions for specific architectures
-def load_vgg16_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_vgg16_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load VGG16 model for emotion classification."""
     return load_vgg_model(model_path, 'vgg16', num_classes, input_size, device)
 
 
-def load_vgg19_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_vgg19_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load VGG19 model for emotion classification."""
     return load_vgg_model(model_path, 'vgg19', num_classes, input_size, device)
 

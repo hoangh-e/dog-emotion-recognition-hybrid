@@ -2,7 +2,7 @@
 ECA-Net (Efficient Channel Attention Network) models for dog emotion classification.
 
 This module provides ECA-Net implementations optimized for 
-dog emotion classification with 4 emotion classes: sad, angry, happy, relaxed.
+dog emotion classification with 3 emotion classes: angry, happy, relaxed.
 """
 
 import torch
@@ -137,7 +137,7 @@ class ECABottleneck(nn.Module):
 class ECAResNet(nn.Module):
     """ECA-ResNet model for emotion classification."""
     
-    def __init__(self, block, layers, num_classes=4, gamma=2, b=1):
+    def __init__(self, block, layers, num_classes=3, gamma=2, b=1):
         super(ECAResNet, self).__init__()
         
         self.inplanes = 64
@@ -211,32 +211,32 @@ class ECAResNet(nn.Module):
         return x
 
 
-def eca_resnet18(num_classes=4, **kwargs):
+def eca_resnet18(num_classes=3, **kwargs):
     """ECA-ResNet-18 model."""
     return ECAResNet(ECABasicBlock, [2, 2, 2, 2], num_classes=num_classes, **kwargs)
 
 
-def eca_resnet34(num_classes=4, **kwargs):
+def eca_resnet34(num_classes=3, **kwargs):
     """ECA-ResNet-34 model."""
     return ECAResNet(ECABasicBlock, [3, 4, 6, 3], num_classes=num_classes, **kwargs)
 
 
-def eca_resnet50(num_classes=4, **kwargs):
+def eca_resnet50(num_classes=3, **kwargs):
     """ECA-ResNet-50 model."""
     return ECAResNet(ECABottleneck, [3, 4, 6, 3], num_classes=num_classes, **kwargs)
 
 
-def eca_resnet101(num_classes=4, **kwargs):
+def eca_resnet101(num_classes=3, **kwargs):
     """ECA-ResNet-101 model."""
     return ECAResNet(ECABottleneck, [3, 4, 23, 3], num_classes=num_classes, **kwargs)
 
 
-def eca_resnet152(num_classes=4, **kwargs):
+def eca_resnet152(num_classes=3, **kwargs):
     """ECA-ResNet-152 model."""
     return ECAResNet(ECABottleneck, [3, 8, 36, 3], num_classes=num_classes, **kwargs)
 
 
-def load_ecanet_model(model_path, architecture='eca_resnet50', num_classes=4, input_size=224, device='cuda'):
+def load_ecanet_model(model_path, architecture='eca_resnet50', num_classes=3, input_size=224, device='cuda'):
     """
     Load a pre-trained ECA-Net model for dog emotion classification.
     
@@ -247,7 +247,7 @@ def load_ecanet_model(model_path, architecture='eca_resnet50', num_classes=4, in
     architecture : str
         ECA-Net architecture ('eca_resnet18', 'eca_resnet34', 'eca_resnet50', 'eca_resnet101', 'eca_resnet152')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     input_size : int
         Input image size (default: 224)
     device : str
@@ -329,7 +329,7 @@ def load_ecanet_model(model_path, architecture='eca_resnet50', num_classes=4, in
 
 
 def predict_emotion_ecanet(image_path, model, transform, head_bbox=None, device='cuda',
-                          emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                          emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Predict dog emotion using ECA-Net model.
     
@@ -443,7 +443,7 @@ def get_ecanet_transforms(input_size=224, is_training=True):
     return transform
 
 
-def create_ecanet_model(architecture='eca_resnet50', num_classes=4, pretrained=False):
+def create_ecanet_model(architecture='eca_resnet50', num_classes=3, pretrained=False):
     """
     Create an ECA-Net model for emotion classification.
     
@@ -452,7 +452,7 @@ def create_ecanet_model(architecture='eca_resnet50', num_classes=4, pretrained=F
     architecture : str
         ECA-Net architecture ('eca_resnet18', 'eca_resnet34', 'eca_resnet50', 'eca_resnet101', 'eca_resnet152')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     pretrained : bool
         Whether to use pretrained weights (default: False)
         
@@ -479,19 +479,19 @@ def create_ecanet_model(architecture='eca_resnet50', num_classes=4, pretrained=F
 
 
 # Convenience functions for specific architectures
-def load_eca_resnet18_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_eca_resnet18_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_ecanet_model(model_path, 'eca_resnet18', num_classes, input_size, device)
 
-def load_eca_resnet34_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_eca_resnet34_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_ecanet_model(model_path, 'eca_resnet34', num_classes, input_size, device)
 
-def load_eca_resnet50_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_eca_resnet50_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_ecanet_model(model_path, 'eca_resnet50', num_classes, input_size, device)
 
-def load_eca_resnet101_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_eca_resnet101_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_ecanet_model(model_path, 'eca_resnet101', num_classes, input_size, device)
 
-def load_eca_resnet152_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_eca_resnet152_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_ecanet_model(model_path, 'eca_resnet152', num_classes, input_size, device)
 
 def predict_emotion_eca_resnet18(image_path, model, transform, head_bbox=None, device='cuda'):

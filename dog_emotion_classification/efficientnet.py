@@ -2,7 +2,7 @@
 EfficientNet models for dog emotion classification.
 
 This module provides EfficientNet B0-B7 implementations optimized for 
-dog emotion classification with 4 emotion classes: sad, angry, happy, relaxed.
+dog emotion classification with 3 emotion classes: angry, happy, relaxed.
 """
 
 import torch
@@ -15,7 +15,7 @@ import numpy as np
 import os
 
 
-def load_efficientnet_model(model_path, architecture='efficientnet_b0', num_classes=4, input_size=224, device='cuda'):
+def load_efficientnet_model(model_path, architecture='efficientnet_b0', num_classes=3, input_size=224, device='cuda'):
     """
     Load a pre-trained EfficientNet model for dog emotion classification.
     
@@ -26,7 +26,7 @@ def load_efficientnet_model(model_path, architecture='efficientnet_b0', num_clas
     architecture : str
         EfficientNet architecture ('efficientnet_b0' to 'efficientnet_b7')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     input_size : int
         Input image size (default: 224)
     device : str
@@ -111,7 +111,7 @@ def load_efficientnet_model(model_path, architecture='efficientnet_b0', num_clas
 
 
 def predict_emotion_efficientnet(image_path, model, transform, head_bbox=None, device='cuda',
-                                 emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                                 emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Predict dog emotion using EfficientNet model.
     
@@ -225,7 +225,7 @@ def get_efficientnet_transforms(input_size=224, is_training=True):
     return transform
 
 
-def create_efficientnet_model(architecture='efficientnet_b0', num_classes=4, pretrained=True):
+def create_efficientnet_model(architecture='efficientnet_b0', num_classes=3, pretrained=True):
     """
     Create an EfficientNet model for dog emotion classification.
     
@@ -264,42 +264,42 @@ def create_efficientnet_model(architecture='efficientnet_b0', num_classes=4, pre
 
 
 # Convenience functions for specific architectures
-def load_efficientnet_b0_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_efficientnet_b0_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load EfficientNet B0 model for emotion classification."""
     return load_efficientnet_model(model_path, 'efficientnet_b0', num_classes, input_size, device)
 
 
-def load_efficientnet_b1_model(model_path, num_classes=4, input_size=240, device='cuda'):
+def load_efficientnet_b1_model(model_path, num_classes=3, input_size=240, device='cuda'):
     """Load EfficientNet B1 model for emotion classification."""
     return load_efficientnet_model(model_path, 'efficientnet_b1', num_classes, input_size, device)
 
 
-def load_efficientnet_b2_model(model_path, num_classes=4, input_size=260, device='cuda'):
+def load_efficientnet_b2_model(model_path, num_classes=3, input_size=260, device='cuda'):
     """Load EfficientNet B2 model for emotion classification."""
     return load_efficientnet_model(model_path, 'efficientnet_b2', num_classes, input_size, device)
 
 
-def load_efficientnet_b3_model(model_path, num_classes=4, input_size=300, device='cuda'):
+def load_efficientnet_b3_model(model_path, num_classes=3, input_size=300, device='cuda'):
     """Load EfficientNet B3 model for emotion classification."""
     return load_efficientnet_model(model_path, 'efficientnet_b3', num_classes, input_size, device)
 
 
-def load_efficientnet_b4_model(model_path, num_classes=4, input_size=380, device='cuda'):
+def load_efficientnet_b4_model(model_path, num_classes=3, input_size=380, device='cuda'):
     """Load EfficientNet B4 model for emotion classification."""
     return load_efficientnet_model(model_path, 'efficientnet_b4', num_classes, input_size, device)
 
 
-def load_efficientnet_b5_model(model_path, num_classes=4, input_size=456, device='cuda'):
+def load_efficientnet_b5_model(model_path, num_classes=3, input_size=456, device='cuda'):
     """Load EfficientNet B5 model for emotion classification."""
     return load_efficientnet_model(model_path, 'efficientnet_b5', num_classes, input_size, device)
 
 
-def load_efficientnet_b6_model(model_path, num_classes=4, input_size=528, device='cuda'):
+def load_efficientnet_b6_model(model_path, num_classes=3, input_size=528, device='cuda'):
     """Load EfficientNet B6 model for emotion classification."""
     return load_efficientnet_model(model_path, 'efficientnet_b6', num_classes, input_size, device)
 
 
-def load_efficientnet_b7_model(model_path, num_classes=4, input_size=600, device='cuda'):
+def load_efficientnet_b7_model(model_path, num_classes=3, input_size=600, device='cuda'):
     """Load EfficientNet B7 model for emotion classification."""
     return load_efficientnet_model(model_path, 'efficientnet_b7', num_classes, input_size, device)
 

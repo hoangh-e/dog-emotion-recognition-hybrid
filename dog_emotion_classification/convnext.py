@@ -2,7 +2,7 @@
 ConvNeXt models for dog emotion classification.
 
 This module provides ConvNeXt implementations optimized for 
-dog emotion classification with 4 emotion classes: sad, angry, happy, relaxed.
+dog emotion classification with 3 emotion classes: angry, happy, relaxed.
 """
 
 import torch
@@ -15,7 +15,7 @@ import numpy as np
 import os
 
 
-def load_convnext_model(model_path, architecture='convnext_tiny', num_classes=4, input_size=224, device='cuda'):
+def load_convnext_model(model_path, architecture='convnext_tiny', num_classes=3, input_size=224, device='cuda'):
     """
     Load a pre-trained ConvNeXt model for dog emotion classification.
     
@@ -26,7 +26,7 @@ def load_convnext_model(model_path, architecture='convnext_tiny', num_classes=4,
     architecture : str
         ConvNeXt architecture ('convnext_tiny', 'convnext_small', 'convnext_base', 'convnext_large')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     input_size : int
         Input image size (default: 224)
     device : str
@@ -113,7 +113,7 @@ def load_convnext_model(model_path, architecture='convnext_tiny', num_classes=4,
 
 
 def predict_emotion_convnext(image_path, model, transform, head_bbox=None, device='cuda',
-                            emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                            emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Predict dog emotion using ConvNeXt model.
     
@@ -227,7 +227,7 @@ def get_convnext_transforms(input_size=224, is_training=True):
     return transform
 
 
-def create_convnext_model(architecture='convnext_tiny', num_classes=4, pretrained=True):
+def create_convnext_model(architecture='convnext_tiny', num_classes=3, pretrained=True):
     """
     Create a ConvNeXt model for dog emotion classification.
     
@@ -265,22 +265,22 @@ def create_convnext_model(architecture='convnext_tiny', num_classes=4, pretraine
 
 
 # Convenience functions for specific architectures
-def load_convnext_tiny_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_convnext_tiny_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load ConvNeXt Tiny model for emotion classification."""
     return load_convnext_model(model_path, 'convnext_tiny', num_classes, input_size, device)
 
 
-def load_convnext_small_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_convnext_small_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load ConvNeXt Small model for emotion classification."""
     return load_convnext_model(model_path, 'convnext_small', num_classes, input_size, device)
 
 
-def load_convnext_base_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_convnext_base_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load ConvNeXt Base model for emotion classification."""
     return load_convnext_model(model_path, 'convnext_base', num_classes, input_size, device)
 
 
-def load_convnext_large_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_convnext_large_model(model_path, num_classes=3, input_size=224, device='cuda'):
     """Load ConvNeXt Large model for emotion classification."""
     return load_convnext_model(model_path, 'convnext_large', num_classes, input_size, device)
 

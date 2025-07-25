@@ -2,7 +2,7 @@
 BoTNet (Bottleneck Transformer) models for dog emotion classification.
 
 This module provides BoTNet implementations optimized for
-dog emotion recognition with 4 emotion classes: ['angry', 'happy', 'relaxed', 'sad'].
+dog emotion recognition with 3 emotion classes: ['angry', 'happy', 'relaxed', 'sad'].
 
 BoTNet replaces the 3x3 convolution in the final bottleneck block of ResNet
 with multi-head self-attention, combining the benefits of convolution and attention.
@@ -120,7 +120,7 @@ class BoTBlock(nn.Module):
 class BoTNet(nn.Module):
     """BoTNet model for emotion classification."""
     
-    def __init__(self, num_classes=4, heads=4):
+    def __init__(self, num_classes=3, heads=4):
         super().__init__()
         self.in_planes = 64
         
@@ -178,7 +178,7 @@ def load_botnet_model(model_path: str, architecture: str = 'botnet50',
     Args:
         model_path: Path to the saved model file
         architecture: BoTNet architecture ('botnet50', 'botnet101')
-        num_classes: Number of emotion classes (default: 4)
+        num_classes: Number of emotion classes (default: 3)
         input_size: Input image size (default: 224)
         device: Device to load the model on ('cuda' or 'cpu')
     

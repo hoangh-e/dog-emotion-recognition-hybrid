@@ -2,7 +2,7 @@
 NASNet (Neural Architecture Search Network) models for dog emotion classification.
 
 This module provides NASNet implementations optimized for dog emotion classification 
-with 4 emotion classes: sad, angry, happy, relaxed.
+with 3 emotion classes: angry, happy, relaxed.
 
 Based on "Learning Transferable Architectures for Scalable Image Recognition"
 by Barret Zoph et al. (2018).
@@ -90,7 +90,7 @@ class NASNetCell(nn.Module):
 class NASNetModel(nn.Module):
     """NASNet model for dog emotion classification."""
     
-    def __init__(self, num_classes=4, num_cells=6, channels=32):
+    def __init__(self, num_classes=3, num_cells=6, channels=32):
         super().__init__()
         
         # Initial convolution
@@ -136,14 +136,14 @@ class NASNetModel(nn.Module):
         return x
 
 
-def load_nasnet_model(model_path=None, architecture='nasnet_mobile', num_classes=4, input_size=224, device='cuda'):
+def load_nasnet_model(model_path=None, architecture='nasnet_mobile', num_classes=3, input_size=224, device='cuda'):
     """
     Load NASNet model for dog emotion classification.
     
     Args:
         model_path: Path to model checkpoint
         architecture: NASNet variant ('nasnet_mobile', 'nasnet_large')
-        num_classes: Number of emotion classes (default: 4)
+        num_classes: Number of emotion classes (default: 3)
         input_size: Input image size (default: 224)
         device: Device to load model on
     
@@ -201,7 +201,7 @@ def load_nasnet_model(model_path=None, architecture='nasnet_mobile', num_classes
     return model
 
 
-def create_custom_nasnet(variant='mobile', num_classes=4):
+def create_custom_nasnet(variant='mobile', num_classes=3):
     """Create custom NASNet model."""
     
     # Handle both old and new architecture naming
@@ -213,11 +213,11 @@ def create_custom_nasnet(variant='mobile', num_classes=4):
         return NASNetModel(num_classes=num_classes, num_cells=6, channels=32)
 
 
-def create_simple_nasnet(num_classes=4, device='cuda'):
+def create_simple_nasnet(num_classes=3, device='cuda'):
     """Create a simple NASNet-inspired model."""
     
     class SimpleNASNet(nn.Module):
-        def __init__(self, num_classes=4):
+        def __init__(self, num_classes=3):
             super().__init__()
             
             # Stem
@@ -268,7 +268,7 @@ def create_simple_nasnet(num_classes=4, device='cuda'):
 
 
 def predict_emotion_nasnet(image_path, model, transform=None, head_bbox=None, device='cuda',
-                          emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                          emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Predict dog emotion using NASNet model.
     
@@ -370,7 +370,7 @@ NASNET_VARIANTS = {
 }
 
 
-def load_nasnet_model_standard(model_path, architecture='nasnet_mobile', num_classes=4, input_size=224, device='cuda'):
+def load_nasnet_model_standard(model_path, architecture='nasnet_mobile', num_classes=3, input_size=224, device='cuda'):
     """
     Standardized load function for NASNet model to match other modules.
     
@@ -381,7 +381,7 @@ def load_nasnet_model_standard(model_path, architecture='nasnet_mobile', num_cla
     architecture : str
         NASNet architecture ('nasnet_mobile', 'nasnet_large')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     input_size : int
         Input image size (default: 224)
     device : str
@@ -415,7 +415,7 @@ def load_nasnet_model_standard(model_path, architecture='nasnet_mobile', num_cla
 
 
 def predict_emotion_nasnet_standard(image_path, model, transform, head_bbox=None, device='cuda',
-                                   emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                                   emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Standardized predict function for NASNet model to match other modules.
     

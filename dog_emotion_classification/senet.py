@@ -2,7 +2,7 @@
 SE-Net (Squeeze-and-Excitation Networks) models for dog emotion classification.
 
 This module provides SE-Net implementations optimized for 
-dog emotion classification with 4 emotion classes: sad, angry, happy, relaxed.
+dog emotion classification with 3 emotion classes: angry, happy, relaxed.
 """
 
 import torch
@@ -131,7 +131,7 @@ class SEBottleneck(nn.Module):
 class SEResNet(nn.Module):
     """SE-ResNet model for emotion classification."""
     
-    def __init__(self, block, layers, num_classes=4, reduction=16):
+    def __init__(self, block, layers, num_classes=3, reduction=16):
         super(SEResNet, self).__init__()
         
         self.inplanes = 64
@@ -255,46 +255,46 @@ class SEResNeXtBottleneck(nn.Module):
         return out
 
 
-def se_resnet18(num_classes=4, **kwargs):
+def se_resnet18(num_classes=3, **kwargs):
     """SE-ResNet-18 model."""
     return SEResNet(SEBasicBlock, [2, 2, 2, 2], num_classes=num_classes, **kwargs)
 
 
-def se_resnet34(num_classes=4, **kwargs):
+def se_resnet34(num_classes=3, **kwargs):
     """SE-ResNet-34 model."""
     return SEResNet(SEBasicBlock, [3, 4, 6, 3], num_classes=num_classes, **kwargs)
 
 
-def se_resnet50(num_classes=4, **kwargs):
+def se_resnet50(num_classes=3, **kwargs):
     """SE-ResNet-50 model."""
     return SEResNet(SEBottleneck, [3, 4, 6, 3], num_classes=num_classes, **kwargs)
 
 
-def se_resnet101(num_classes=4, **kwargs):
+def se_resnet101(num_classes=3, **kwargs):
     """SE-ResNet-101 model."""
     return SEResNet(SEBottleneck, [3, 4, 23, 3], num_classes=num_classes, **kwargs)
 
 
-def se_resnet152(num_classes=4, **kwargs):
+def se_resnet152(num_classes=3, **kwargs):
     """SE-ResNet-152 model."""
     return SEResNet(SEBottleneck, [3, 8, 36, 3], num_classes=num_classes, **kwargs)
 
 
-def se_resnext50_32x4d(num_classes=4, **kwargs):
+def se_resnext50_32x4d(num_classes=3, **kwargs):
     """SE-ResNeXt-50 32x4d model."""
     kwargs['groups'] = 32
     kwargs['base_width'] = 4
     return SEResNet(SEResNeXtBottleneck, [3, 4, 6, 3], num_classes=num_classes, **kwargs)
 
 
-def se_resnext101_32x8d(num_classes=4, **kwargs):
+def se_resnext101_32x8d(num_classes=3, **kwargs):
     """SE-ResNeXt-101 32x8d model."""
     kwargs['groups'] = 32
     kwargs['base_width'] = 8
     return SEResNet(SEResNeXtBottleneck, [3, 4, 23, 3], num_classes=num_classes, **kwargs)
 
 
-def load_senet_model(model_path, architecture='se_resnet50', num_classes=4, input_size=224, device='cuda'):
+def load_senet_model(model_path, architecture='se_resnet50', num_classes=3, input_size=224, device='cuda'):
     """
     Load a pre-trained SE-Net model for dog emotion classification.
     
@@ -306,7 +306,7 @@ def load_senet_model(model_path, architecture='se_resnet50', num_classes=4, inpu
         SE-Net architecture ('se_resnet18', 'se_resnet34', 'se_resnet50', 'se_resnet101', 'se_resnet152', 
                            'se_resnext50_32x4d', 'se_resnext101_32x8d')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     input_size : int
         Input image size (default: 224)
     device : str
@@ -392,7 +392,7 @@ def load_senet_model(model_path, architecture='se_resnet50', num_classes=4, inpu
 
 
 def predict_emotion_senet(image_path, model, transform, head_bbox=None, device='cuda',
-                         emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                         emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Predict dog emotion using SE-Net model.
     
@@ -506,7 +506,7 @@ def get_senet_transforms(input_size=224, is_training=True):
     return transform
 
 
-def create_senet_model(architecture='se_resnet50', num_classes=4, pretrained=False):
+def create_senet_model(architecture='se_resnet50', num_classes=3, pretrained=False):
     """
     Create a SE-Net model for emotion classification.
     
@@ -516,7 +516,7 @@ def create_senet_model(architecture='se_resnet50', num_classes=4, pretrained=Fal
         SE-Net architecture ('se_resnet18', 'se_resnet34', 'se_resnet50', 'se_resnet101', 'se_resnet152',
                            'se_resnext50_32x4d', 'se_resnext101_32x8d')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     pretrained : bool
         Whether to use pretrained weights (default: False)
         
@@ -547,25 +547,25 @@ def create_senet_model(architecture='se_resnet50', num_classes=4, pretrained=Fal
 
 
 # Convenience functions for specific architectures
-def load_se_resnet18_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_se_resnet18_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_senet_model(model_path, 'se_resnet18', num_classes, input_size, device)
 
-def load_se_resnet34_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_se_resnet34_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_senet_model(model_path, 'se_resnet34', num_classes, input_size, device)
 
-def load_se_resnet50_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_se_resnet50_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_senet_model(model_path, 'se_resnet50', num_classes, input_size, device)
 
-def load_se_resnet101_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_se_resnet101_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_senet_model(model_path, 'se_resnet101', num_classes, input_size, device)
 
-def load_se_resnet152_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_se_resnet152_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_senet_model(model_path, 'se_resnet152', num_classes, input_size, device)
 
-def load_se_resnext50_32x4d_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_se_resnext50_32x4d_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_senet_model(model_path, 'se_resnext50_32x4d', num_classes, input_size, device)
 
-def load_se_resnext101_32x8d_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_se_resnext101_32x8d_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_senet_model(model_path, 'se_resnext101_32x8d', num_classes, input_size, device)
 
 def predict_emotion_se_resnet18(image_path, model, transform, head_bbox=None, device='cuda'):

@@ -2,7 +2,7 @@
 MLP-Mixer (Multi-Layer Perceptron Mixer) models for dog emotion classification.
 
 This module provides MLP-Mixer implementations optimized for dog emotion classification 
-with 4 emotion classes: sad, angry, happy, relaxed.
+with 3 emotion classes: angry, happy, relaxed.
 
 Based on "MLP-Mixer: An all-MLP Architecture for Vision"
 by Ilya Tolstikhin et al. (2021).
@@ -83,7 +83,7 @@ class MixerBlock(nn.Module):
 class MLPMixerModel(nn.Module):
     """MLP-Mixer model for dog emotion classification."""
     
-    def __init__(self, image_size=224, patch_size=16, num_classes=4, 
+    def __init__(self, image_size=224, patch_size=16, num_classes=3, 
                  hidden_dim=512, num_blocks=8, tokens_mlp_dim=256, 
                  channels_mlp_dim=2048, dropout=0.1):
         super().__init__()
@@ -134,7 +134,7 @@ class MLPMixerModel(nn.Module):
         return x
 
 
-def load_mlp_mixer_model(checkpoint_path=None, model_variant='base', num_classes=4,
+def load_mlp_mixer_model(checkpoint_path=None, model_variant='base', num_classes=3,
                         device='cuda' if torch.cuda.is_available() else 'cpu'):
     """
     Load MLP-Mixer model for dog emotion classification.
@@ -142,7 +142,7 @@ def load_mlp_mixer_model(checkpoint_path=None, model_variant='base', num_classes
     Args:
         checkpoint_path: Path to model checkpoint
         model_variant: Model variant ('tiny', 'small', 'base', 'large')
-        num_classes: Number of emotion classes (default: 4)
+        num_classes: Number of emotion classes (default: 3)
         device: Device to load model on
     
     Returns:
@@ -199,7 +199,7 @@ def load_mlp_mixer_model(checkpoint_path=None, model_variant='base', num_classes
     return model
 
 
-def create_custom_mlp_mixer(variant='base', num_classes=4):
+def create_custom_mlp_mixer(variant='base', num_classes=3):
     """Create custom MLP-Mixer model with different variants."""
     
     configs = {
@@ -247,7 +247,7 @@ def create_custom_mlp_mixer(variant='base', num_classes=4):
     )
 
 
-def create_simple_mlp_mixer(num_classes=4, device='cuda'):
+def create_simple_mlp_mixer(num_classes=3, device='cuda'):
     """Create a simple MLP-Mixer model."""
     
     class SimpleMixerBlock(nn.Module):
@@ -285,7 +285,7 @@ def create_simple_mlp_mixer(num_classes=4, device='cuda'):
             return x
     
     class SimpleMLPMixer(nn.Module):
-        def __init__(self, num_classes=4):
+        def __init__(self, num_classes=3):
             super().__init__()
             self.patch_size = 16
             self.num_patches = (224 // 16) ** 2  # 196
@@ -436,7 +436,7 @@ MLP_MIXER_VARIANTS = {
 }
 
 
-def load_mlp_mixer_model_standard(model_path, architecture='mlp_mixer_base', num_classes=4, input_size=224, device='cuda'):
+def load_mlp_mixer_model_standard(model_path, architecture='mlp_mixer_base', num_classes=3, input_size=224, device='cuda'):
     """
     Standardized load function for MLP-Mixer model to match other modules.
     
@@ -447,7 +447,7 @@ def load_mlp_mixer_model_standard(model_path, architecture='mlp_mixer_base', num
     architecture : str
         MLP-Mixer architecture ('mlp_mixer_small', 'mlp_mixer_base', 'mlp_mixer_large')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     input_size : int
         Input image size (default: 224)
     device : str
@@ -482,7 +482,7 @@ def load_mlp_mixer_model_standard(model_path, architecture='mlp_mixer_base', num
 
 
 def predict_emotion_mlp_mixer_standard(image_path, model, transform, head_bbox=None, device='cuda',
-                                      emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                                      emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Standardized predict function for MLP-Mixer model to match other modules.
     

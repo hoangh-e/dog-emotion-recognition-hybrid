@@ -2,7 +2,7 @@
 ResMLP (Residual MLP) models for dog emotion classification.
 
 This module provides ResMLP implementations optimized for 
-dog emotion classification with 4 emotion classes: sad, angry, happy, relaxed.
+dog emotion classification with 3 emotion classes: angry, happy, relaxed.
 
 ResMLP is a pure MLP architecture that uses residual connections
 and doesn't use convolutions or attention mechanisms.
@@ -76,7 +76,7 @@ class ResMLP_Block(nn.Module):
 class ResMLP_Model(nn.Module):
     """ResMLP model for emotion classification."""
     
-    def __init__(self, num_classes=4, img_size=224, patch_size=16, 
+    def __init__(self, num_classes=3, img_size=224, patch_size=16, 
                  embed_dim=384, depth=12, mlp_ratio=4, dropout=0.0):
         super().__init__()
         
@@ -130,7 +130,7 @@ class ResMLP_Model(nn.Module):
         return x
 
 
-def load_resmlp_model(model_path, architecture='resmlp_12', num_classes=4, input_size=224, device='cuda'):
+def load_resmlp_model(model_path, architecture='resmlp_12', num_classes=3, input_size=224, device='cuda'):
     """
     Load a pre-trained ResMLP model for dog emotion classification.
     
@@ -141,7 +141,7 @@ def load_resmlp_model(model_path, architecture='resmlp_12', num_classes=4, input
     architecture : str
         ResMLP architecture ('resmlp_12', 'resmlp_24', 'resmlp_36')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     input_size : int
         Input image size (default: 224)
     device : str
@@ -231,7 +231,7 @@ def load_resmlp_model(model_path, architecture='resmlp_12', num_classes=4, input
 
 
 def predict_emotion_resmlp(image_path, model, transform, head_bbox=None, device='cuda',
-                          emotion_classes=['angry', 'happy', 'relaxed', 'sad']):
+                          emotion_classes=['angry', 'happy', 'relaxed']):
     """
     Predict dog emotion using ResMLP model.
     
@@ -341,7 +341,7 @@ def get_resmlp_transforms(input_size=224, is_training=True):
         ])
 
 
-def create_resmlp_model(architecture='resmlp_12', num_classes=4, pretrained=False):
+def create_resmlp_model(architecture='resmlp_12', num_classes=3, pretrained=False):
     """
     Create a ResMLP model for emotion classification.
     
@@ -350,7 +350,7 @@ def create_resmlp_model(architecture='resmlp_12', num_classes=4, pretrained=Fals
     architecture : str
         ResMLP architecture ('resmlp_12', 'resmlp_24', 'resmlp_36')
     num_classes : int
-        Number of emotion classes (default: 4)
+        Number of emotion classes (default: 3)
     pretrained : bool
         Whether to load pretrained weights (default: False)
         
@@ -385,13 +385,13 @@ def create_resmlp_model(architecture='resmlp_12', num_classes=4, pretrained=Fals
 
 
 # Convenience functions for specific architectures
-def load_resmlp_12_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_resmlp_12_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_resmlp_model(model_path, 'resmlp_12', num_classes, input_size, device)
 
-def load_resmlp_24_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_resmlp_24_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_resmlp_model(model_path, 'resmlp_24', num_classes, input_size, device)
 
-def load_resmlp_36_model(model_path, num_classes=4, input_size=224, device='cuda'):
+def load_resmlp_36_model(model_path, num_classes=3, input_size=224, device='cuda'):
     return load_resmlp_model(model_path, 'resmlp_36', num_classes, input_size, device)
 
 def predict_emotion_resmlp_12(image_path, model, transform, head_bbox=None, device='cuda'):
