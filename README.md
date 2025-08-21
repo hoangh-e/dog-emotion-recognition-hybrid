@@ -321,24 +321,6 @@ dog-emotion-recognition-hybrid/
 └── README.md                          # This file
 ```
 
-## 🤝 Đóng góp
-
-1. Fork dự án
-2. Tạo feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to branch (`git push origin feature/AmazingFeature`)
-5. Mở Pull Request
-
-## 📝 License
-
-Distributed under the MIT License. See `LICENSE` for more information.
-
-## 📞 Liên hệ
-
-Dog Emotion Recognition Team
-- Email: contact@dogemotionrecognition.com
-- Project Link: [https://github.com/username/dog-emotion-recognition-hybrid](https://github.com/username/dog-emotion-recognition-hybrid)
-
 ## 🙏 Acknowledgments
 
 - [PyTorch](https://pytorch.org/) - Deep Learning Framework
